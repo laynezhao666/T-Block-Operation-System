@@ -1,0 +1,91 @@
+@import "~common/style/mixin";
+
+.pagination {
+  background: #fbfbfb;
+  display: flex;
+  align-items: center;
+  padding-right: 24px;
+  color: #666;
+  height: 56px;
+
+  &-text {
+    margin-left: auto;
+  }
+}
+
+.table-wrap {
+  position: relative;
+
+  .selection-header {
+    $height: 64px;
+    position: absolute;
+    top: -$height;
+    z-index: 90;
+    height: $height;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 3px 5px 0 rgba(203,203,203,0.50);
+
+    > .tn-icon {
+      padding: $space-m + 4px $space-m;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+
+    .selection-text {
+      font-size: $font-size-l;
+    }
+
+    .right-btns {
+      float: right;
+      padding: 19px 0;
+      margin-right: $space-l;
+
+      [class^="tn-icon-"],
+      [class*=" tn-icon-"] {
+        transform: scale(0.9);
+        margin-right: $space-xs;
+      }
+    }
+
+    span {
+      vertical-align: middle;
+    }
+  }
+
+  .el-table {
+    &__header {
+      &-wrapper {
+        .tn-icon-pin-inclined {
+          display: none;
+        }
+      }
+    }
+
+    &__fixed,
+    &__fixed-right {
+      .tn-icon-pin {
+        display: none;
+      }
+    }
+
+    .cell {
+      white-space: nowrap;
+
+      a {
+        color: $primary;
+      }
+    }
+
+    .el-table-column--selection {
+      .cell {
+        text-overflow: unset;
+      }
+    }
+    
+    .el-table__empty-block { // Element自带类名
+      // height: 500px;
+      border: none;
+    }
+  }
+}

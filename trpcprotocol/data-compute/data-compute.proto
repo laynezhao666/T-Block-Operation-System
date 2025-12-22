@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package tbos.data.compute;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "trpcprotocol/data-compute";
+
+// 接收标准点策略请求参数
+message ReqReceiveTask {
+	string task_ver_mark        = 1;  // 下发任务版本标识
+	int32 publish_type          = 2;  // 任务下发类型
+	repeated PointTask add_task = 3;  // 标准点计算策略列表
+	repeated PointTask del_task = 4;  // 需要删除的任务
+}
+
+// 标准点策略
+message PointTask {
+	string device_gid     = 1;  // 设备GID
+	string point_name_en  = 2;  // 设备名称英文
+	string expression     = 3;  // 测点表达式
+	string expression_map = 4;  // 测点映射（设备编号）
+	string version        = 5;  // 记录版本号
+	int32 mozu_id         = 6;  // 所属模组Id
+}
+
+// 计算信息查询-请求参数
+message ReqQueryFilter {
+	repeated string point_key = 1;  // 按测点key批量筛选
+	string device_gid         = 2;  // 按设备gid筛选
+	string point_name_en      = 3;  // 按测点英文名称筛选
+}
+
+// 展示任务-响应参数
+message RspShowTask {
+	map<string, PointTask> map = 1;  // 数据map
+	int32 total                = 2;  // 总共条数
+}
+
+// 测点值信息
+message PointValue {
+	int64 time    = 1;  // 时间
+	double value  = 2;  // 值
+	int32 quality = 3;  // 质量
+}
+
+// 展示测点值-响应参数
+message RspShowData {
+	map<string, PointValue> map = 1;  // 数据map
+	int32 total                 = 2;  // 总共条数
+}
+
+// 标准点计算相关接口
+service Compute {
+	// @alias=/Compute/ReceiveTask  接收标准点计算任务
+	rpc ReceiveTask(ReqReceiveTask) returns (google.protobuf.Empty);
+	// @alias=/Compute/ShowTask  接收标准点计算任务
+	rpc ShowTask(ReqQueryFilter) returns (RspShowTask);
+	// @alias=/Compute/ShowData  接收标准点计算任务
+	rpc ShowData(ReqQueryFilter) returns (RspShowData);
+}

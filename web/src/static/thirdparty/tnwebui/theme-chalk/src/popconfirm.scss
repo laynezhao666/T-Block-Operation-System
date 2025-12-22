@@ -1,0 +1,18 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(popconfirm) {
+  @include e(main) {
+    display: flex;
+    align-items: center;
+    margin: 1em 4px;
+  }
+  @include e(icon) {
+    margin-right: 4px;
+    font-size: 20px;
+  }
+  @include e(action) {
+    text-align: right; 
+    margin: 0 4px;
+  }
+}

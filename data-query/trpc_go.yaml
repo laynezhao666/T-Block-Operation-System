@@ -1,0 +1,58 @@
+etrpc:
+  service_name: data-query
+  service_port: ${PORT_DATA_QUERY}
+global:
+  max_frame_size: 1048576000
+  namespace: Production
+  local_ip: ${LOCAL_IP}
+server:
+  filter:
+    - recovery
+  server: ${etrpc.service_name}
+  service:
+    - ip: 0.0.0.0
+      name: ${etrpc.service_name}
+      network: tcp
+      port: ${etrpc.service_port}
+      protocol: http
+client:
+  network: tcp
+  timeout: 5000
+  service:
+#    - name: trpc.influxdb.idc.tbos
+#      target: influxdb://${INFLUXDB_USER}:${INFLUXDB_PASSWORD}@${INFLUXDB_ADDR}?timeout=10000&write_encoding=gzip
+    - callee: tbos.data.cache.Point
+      name: data-cache
+      target: ip://${LOCAL_IP}:${PORT_DATA_CACHE}
+      protocol: http
+read:
+  plugins:
+    - type: cache-api
+      name: tbos-cache
+      order: 1
+      extra:
+        read_minutes: 60
+#    - type: influx
+#      name: tbos-influx
+#      order: 2
+#      extra:
+#        influx_name: trpc.influxdb.idc.tbos
+#        influx_database: ${INFLUXDB_DBNAME}
+#        data_measurement: ${INFLUXDB_POINT_MEASUREMENT}
+plugins:
+  log:
+    default:
+      - caller_skip: 3
+        enable_color: true
+        formatter: console
+        level: info
+        writer: console
+
+ExpireTimeSinceQuery: 180
+NormalCostThreshold: 100
+ExtremelyCostThreshold: 200
+ProcessPointConcurrencyLimit: 5
+ReadRangeBatchSize: 10000
+ReadChangeBatchSize: 10000
+FillPointConcurrencyLimit: 1
+ExpireTimeMargin: 3

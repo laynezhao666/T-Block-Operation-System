@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package tbos.data.cache;
+
+option go_package = "trpcprotocol/data-cache";
+
+// 质量类型枚举
+enum QualityType {
+  QUALITY_TYPE_NORMAL = 0;  // 正常值
+  QUALITY_TYPE_BAD    = 1;  // 异常值
+  QUALITY_TYPE_ALL    = 2;  // 所有值
+}
+
+// 测点数据查询请求参数
+message ReqQueryData {
+  repeated string point_list = 1;  // 需要查询的消息列表
+  int64 begin                = 2;  // 起始时间
+  int64 end                  = 3;  // 结束时间
+  QualityType quality_type   = 4;  // 质量类型
+}
+
+// 测点数据查询返回数据
+message RspQueryData {
+  map<string, PointValueList> point_map = 1;  // 测点对应的值map
+  // 测点值列表
+  message PointValueList {
+    // 测点值
+    repeated PointValue values = 1;  // 测点值列表
+    message PointValue {
+      int64 q  = 1;  // 测点质量
+      double v = 2;  // 测点值
+      int64 t  = 3;  // 测点时间
+    }
+  }
+}
+
+// 变化测点查询参数
+message ReqQueryChanged {
+  repeated string point_list = 1;  // 测点列表
+  int64 begin                = 2;  // 开始时间
+}
+
+// 变化测点查询返回数据
+message RspQueryChanged {
+  map<string, int64> changed_map = 1;  // 各测点最近变化时间
+}
+
+// 查询缓存的测点-查询参数
+message ReqQueryCachedPoint {
+  repeated string point_list = 1;  // 测点列表
+  int32 page                 = 2;  // 页码
+  int32 size                 = 3;  // 页大小
+}
+
+// 查询缓存的测点-响应数据
+message RspQueryCachedPoint {
+  repeated string point_list = 1;  // 测点列表
+  int32 total                = 2;  // 总数
+}
+
+// 测点相关服务
+service Point {
+  //  @alias=/Point/QueryData   测点数据查询
+  rpc QueryData(ReqQueryData) returns (RspQueryData);
+  //  @alias=/Point/QueryChanged 查询变化测点
+  rpc QueryChanged(ReqQueryChanged) returns (RspQueryChanged);
+  //  @alias=/Point/QueryCachedPoint 查询缓存的测点
+  rpc QueryCachedPoint(ReqQueryCachedPoint) returns (RspQueryCachedPoint);
+}

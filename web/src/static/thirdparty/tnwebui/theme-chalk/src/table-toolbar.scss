@@ -1,0 +1,57 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(table-toolbar) {
+  height: 64px;
+  padding-left: 24px;
+  padding-right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  @include e(extra) {
+    flex: 1;
+    padding-right: 24px;
+  }
+
+  @include e(tools) {
+    display: flex;
+    align-items: center;
+    padding-right: 16px;
+  }
+
+  @include e(search) {
+    display: flex;
+    align-items: center;
+    border: 1px solid transparent;
+    height: 64px;
+    padding-left: 16px;
+    border-left: 1px solid $--border-color-light;
+    
+    &-input {
+      font-size: 14px;
+    }
+
+    &-icon {
+      color: $--color-text-secondary;
+    }
+  }
+
+  @include e(icons) {
+    margin-left: 12px;
+  }
+
+  @include e(more) {
+    margin-left: 12px;
+
+    &-icon {
+      color: $--color-text-secondary;
+      outline: none;
+      cursor: pointer;
+
+      &.triggered {
+        color: $--color-primary;
+      }
+    }
+  }
+}

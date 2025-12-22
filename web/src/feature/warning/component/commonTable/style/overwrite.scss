@@ -1,0 +1,63 @@
+@import "./common";
+
+.el {
+    &-tabs {
+      background-color: white;
+  
+      &__header {
+        margin: 0;
+      }
+    }
+  
+    &-dropdown-menu {
+      margin-top: 0 !important;
+  
+      > div {
+        overflow: hidden;
+      }
+    }
+  
+    &-date-editor {
+      .el-range__icon {
+        position: absolute;
+        right: 6px;
+        color: $text-color-light;
+      }
+  
+      .el-input__inner {
+        padding-left: 0;
+        padding-right: 0;
+      }
+  
+      .el-input__prefix {
+        right: 0;
+        left: unset;
+        color: $text-color-light;
+      }
+    }
+  
+    &-form-item {
+      &__label {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+    }
+  
+    &-tree {
+      &-node {
+        &__content {
+          height: 40px;
+        }
+  
+        &.is-current {
+          color: $primary;
+  
+          .el-tree-node__content {
+            background-color: #ececec !important;
+          }
+        }
+      }
+    }
+  }
+  

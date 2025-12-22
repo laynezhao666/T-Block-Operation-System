@@ -1,0 +1,142 @@
+@import "./var.scss";
+@import "./mixin";
+
+.header {
+  @include lib-vw(height, 300px);
+  position: relative;
+  padding: 2vh 0vw;
+  overflow: hidden;
+  color: white;
+  box-sizing: border-box;
+  background-color: #1470cc;
+
+  &-bg {
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    transform: translate(0, -50%);
+    transition: 3s all;
+
+    & > img {
+      width: 100%;
+    }
+
+    &-color {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, #1470cccc 0.3, #1470cc00);
+    }
+  }
+
+  &-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    padding: 0vw 2.5vw;
+    @include lib-vw(padding-top, 24px);
+    @include lib-vw(padding-right, 24px);
+  }
+
+  .logo {
+    &-container {
+      display: flex;
+      width: 95vw;
+      justify-content: space-between;
+      @include lib-vw(font-size, 40px);
+
+      > img {
+        @include lib-vw(width, 128px);
+      }
+    }
+
+    &-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+
+      &-time {
+        position: relative;
+        top: -2px;
+        margin-right: 10px;
+        @include lib-vw(font-size, 16px);
+        vertical-align: middle;
+      }
+
+      & > img {
+        @include lib-vw(width, 24px);
+        margin-right: 5px;
+      }
+    }
+  }
+
+  &-main {
+    @include lib-vw(height, 120px);
+    @include lib-vw-4(padding, 8px, 0px, 8px, 0px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    &-title {
+      @include lib-vw-4(margin, 16px, 0px, 0px, 0px);
+      @include lib-vw(font-size, 32px);
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      font-family: "TencentSansW7";
+    }
+
+    &-mozu-title {
+      @include lib-vw-4(margin, 10px, 0px, 20px, 0px);
+      @include lib-vw(font-size, 24px);
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      font-family: "TencentSansW7";
+    }
+
+    &-subtext {
+      @include lib-vw(font-size, 16px);
+      span {
+        @include lib-vw(font-size, 24px);
+        font-weight: 700;
+        color: #ffcb12;
+      }
+    }
+  }
+}
+
+.location-weather-wrapper {
+  @include lib-vw(font-size, 12px);
+  position: absolute;
+  @include lib-vw(bottom, 44px);
+  left: 2.5vw;
+  z-index: 999;
+  display: flex;
+  width: calc(95vw);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lmc-link {
+  display: flex;
+  padding: 0 8px;
+  color: #fff;
+  text-decoration: none;
+  vertical-align: middle;
+  background: #3689ffaa;
+  border-radius: 2px;
+  align-items: center;
+}
+
+.lmc-link-icon {
+  fill: #fff;
+  height: 20px;
+  margin: 2px 12px;
+  margin-left: 0;
+}

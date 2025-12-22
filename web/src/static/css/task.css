@@ -1,0 +1,335 @@
+.task-msg-area .tnbl-panel {
+    width: 632px;
+}
+.task-msg-area .tnbl-panel > .tnbl-panel-top {
+    height: 120px;
+    background-color: #1470CC ;
+    position: relative;
+}
+.task-msg-area .tnbl-panel-top .fa-close{
+    background: url(../images/icon/close-blue.png) center no-repeat;
+}
+.task-msg-area .tnbl-panel .tnbl-panel-title {
+    color:#fff;
+}
+.task-msg-area .tnbl-panel .tnbl-panel-action {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin-left: 0px;
+}
+.task-msg-area .tnbl-panel .tnbl-panel-action > span {
+    display: inline-block;
+    height: 48px;
+    color:#A1C6EB;
+    font-size: 14px;
+    text-align: center;
+    line-height: 48px;
+    cursor: pointer;
+    padding: 0 24px;
+}
+.task-msg-area .tnbl-panel .tnbl-panel-action > span.current {
+    color: #fff;
+    border-bottom: 2px solid #fff;
+}
+.task-msg-area .tnbl-panel {
+    background: #fbfbfb;
+}
+.task-msg-area .tnbl-panel .tnbl-panel-body {
+    background: #fbfbfb !important;
+}
+.task-msg-area .tnbl-panel .tnbl-panel-body .block {
+    background-color: #fbfbfb;
+    display: none;
+}
+.task-msg-area .tnbl-panel-body .block.current {
+    display: block;
+}
+.task-msg-area .tnbl-panel-body .block .block-tab {
+    line-height: 55px;
+    font-size: 16px;
+    font-weight: 600;
+    background-color: #fff;
+    margin-top: 16px;
+    padding-bottom: 2px;
+}
+.task-msg-area .block .block-content {
+    background-color: #fff;
+    margin-top: 20px;
+    padding: 10px 0px;
+}
+
+.task-msg-area .tnbl-panel-body .block .block-content {
+    margin-top: 20px;
+    padding-left: 20px;
+    background-color: #fff;
+}
+
+.task-msg-area .tnbl-panel-body .block .block-content .content {
+    display: none;
+}
+.task-msg-area .tnbl-panel-body .block .block-content .content.current {
+    display: block;
+}
+
+.task-msg-area .fa-chevron-up {
+    font-size: 16px !important;
+}
+
+.task-msg-area .tnbl-ul > li {
+    padding: 0 0 0 24px;
+    position: relative;
+    border-bottom: 1px solid #f0f0f0;
+}
+.task-msg-area .tnbl-ul .detail {
+    line-height: 28px;
+    margin-left: 56px;
+    margin-right: 20px;
+}
+.task-msg-area .hidden {
+    display: none;
+}
+
+
+.task-msg-area .checkbox-default {
+    font-size: 14px;
+}
+
+.task-msg-area .fa-filter {
+    font-size: 23px;
+    color: #999999;
+    cursor: pointer;
+}
+.task-msg-area .fa-filter:hover {
+    color: #2487EB !important;
+}
+.task-msg-area .fa-close {
+    color: #fff;
+}
+.task-msg-area .type-icon {
+    height: 10px;
+    width: 50px;
+    vertical-align: middle;
+    color:white;
+    border-radius: 3px;
+    font-size: 11px;
+    margin-left: -12%;
+}
+.task-msg-area .patrol-icon {
+    background-color: #05D17A;
+}
+.task-msg-area .maintain-icon {
+    background-color: #ffb007;
+}
+.task-msg-area .change-icon {
+    background-color: #a1c6eb;
+}
+.task-msg-area .fa-chevron-up {
+    vertical-align: middle;
+}
+.task-msg-area .li-icon {
+    height: 10px;
+    width: 50px;
+    vertical-align: middle;
+    color:#fff;
+    border-radius: 2px;
+    font-size: 11px;
+}
+.task-msg-area .li-patrol-icon {
+    background-color: #05D17A;
+}
+.task-msg-area .li-type-icon {
+    background-color: #FF3E00;
+    margin-right: 10px;
+}
+
+.task-msg-area .li-btn {
+    text-align: right;
+    display: block;
+    height: 56px;
+    line-height: 56px;
+}
+.task-msg-area .li-title-upon {
+    font-size: 14px;
+    font-weight: bold;
+    height: 28px;
+    margin-top: -13px;
+}
+
+
+.task-msg-area .taskBlock .li-title-upon {
+    margin-top: -6px;
+}
+.task-msg-area .li-title-buttom {
+    font-size: 12px;
+    color: #999999;
+    height: 28px;
+}
+.task-msg-area .li-title-buttom span {
+    margin-left: 5px;
+}
+.task-msg-area .li-time {
+    position: absolute;
+    right: 40px;
+    font-size: 12px;
+    color: #999999;
+}
+
+.task-msg-area .arrow-right {
+    cursor: pointer;
+    margin-left: 7%;
+    margin-top: -17px;
+}
+
+.task-msg-area .li-approval {
+    margin: 0;
+    height: auto;
+}
+.task-msg-area .li-approval .groups-title {
+    min-width: auto;
+    padding: 0;
+    float: left;
+    margin-right:30px;
+    margin-left: 0;
+}
+.task-msg-area .li-approval .groups-input {
+    width: 80%;
+}
+.task-msg-area .li-approval .groups-input input {
+    min-width: auto;
+}
+.task-msg-area .reject {
+    color: red;
+}
+.task-msg-area .transfer,.task-msg-area {
+    color: grey;
+}
+.task-msg-area .transfer:hover {
+    color: #1470cc;
+}
+
+
+.task-msg-area .last-tips {
+    height: 56px;
+    text-align: center;
+    vertical-align: middle;
+}
+.task-msg-area .tnbl-ul ul.detail > li {
+    overflow: hidden;
+}
+.task-msg-area .tnbl-ul ul.detail span {
+    width: 66%;
+    float: left;
+    line-height: 32px;
+}
+.task-msg-area .tnbl-ul ul.detail span.label {
+    width: 20%;
+    float: left;
+}
+.task-msg-area .taskBlock .tnbl-ul > li div.hidden{
+    display: block;
+    visibility: visible;
+}
+.task-msg-area .taskBlock .modal-content .tnbl-ul > li.collapsed div.hidden{
+    display: none;
+}
+
+.task-msg-area .tnbl-panel-body .block .block-tab > span {
+    font-size: 14px;
+    display: inline-block;
+    padding: 0 24px;
+    cursor: pointer;
+    color: #666666;
+    font-weight: normal;
+}
+.task-msg-area .tnbl-panel-body .block .block-tab > span.current {
+    color: #1470CC;
+    border-bottom: 2px solid #1470cc;
+}
+.task-msg-area .search {
+    background-color: white;
+    height:55px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-top: 0 !important;
+}
+.task-msg-area .fa-search {
+    font-size: 16px;
+    margin-left: 24px;
+    margin-top: 20px;
+    color: #999999;
+    cursor: pointer;
+}
+.task-msg-area .searchInput {
+    display: inline-block;
+    margin-left: 10px;
+    width: 82%;
+    height: 56px;
+}
+.task-msg-area .typeDiv {
+    width: 120px;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    right:0;
+    top:175px;
+    z-index: 99;
+}
+.task-msg-area .typeUl li{
+    line-height: 48px;
+    height: 48px;
+    margin-left: 10%;
+}
+.task-msg-area .grey{
+    color: grey;
+}
+.task-msg-area .blue{
+    cursor: pointer;
+    color: #1470CC;
+}
+.task-msg-area .taskBlock .li-title {
+    height: 71px;
+}
+.task-msg-area .tnbl-ul {
+    overflow-y: auto;
+}
+.task-msg-area .li-title {
+    display: inline-block;
+    width:76%;
+    vertical-align: middle;
+    height:56px;
+    margin-left: 10px;
+}
+.task-msg-area .have-read {
+    margin-left: 560px;
+    margin-top: 17px;
+    margin-bottom: 17px;
+    font-size: 14px;
+    color: #1470CC;
+    white-space:nowrap;
+    cursor: pointer;
+}
+.task-msg-area .tnbl-panel-body {
+    max-height: 853px !important;
+    background: #f6f6f6;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.task-msg-area label {
+    font-weight: normal;
+}
+
+.task-msg-area .label {
+    font-weight: normal;
+    font-size: 14px;
+}
+
+/*强制设置一些属性，防止被其他文件覆盖*/
+.task-msg-area div.no-data {
+    width: 100% !important;
+    padding-top: 0 !important;
+    font-size: 14px !important;
+    font-weight: normal !important;
+    background: #FBFBFB !important;
+    position: static !important;
+}

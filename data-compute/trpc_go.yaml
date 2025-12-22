@@ -1,0 +1,40 @@
+etrpc:
+  service_name: data-compute
+  service_port: ${PORT_DATA_COMPUTE}
+global:
+  max_frame_size: 1048576000
+  namespace: Production
+  local_ip: ${LOCAL_IP}
+server:
+  filter:
+    - recovery
+  server: ${etrpc.service_name}
+  service:
+    - ip: 0.0.0.0
+      name: ${etrpc.service_name}
+      network: tcp
+      port: ${etrpc.service_port}
+      protocol: http
+client:
+  network: tcp
+  service:
+    - name: trpc.kafka.tbos.major
+      target: kafka://${KAFKA_ADDR}?topic=${KAFKA_POINT_TOPIC}&partitioner=roundrobin&maxMessageBytes=3145728&compression=lz4
+    - callee: tbos.data.cache.Point
+      name: data-cache
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_DATA_CACHE}
+    - callee: tbos.scheduler.Register
+      name: scheduler
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_SCHEDULER}
+plugins:
+  log:
+    default:
+      - caller_skip: 3
+        enable_color: true
+        formatter: console
+        level: info
+        writer: console
+heartbeat:
+  port: ${PORT_DATA_COMPUTE}

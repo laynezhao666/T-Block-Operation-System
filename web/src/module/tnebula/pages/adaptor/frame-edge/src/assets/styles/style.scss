@@ -1,0 +1,130 @@
+@import './_utils.scss';
+
+@font-face {
+  font-family: 'TencentSansW7';
+  src: url(../fonts/TencentSans-W7.ttf);
+}
+
+@font-face {
+  font-family: 'DINAlternate-Bold';
+  src: url(../fonts/DINAlternateBold.ttf);
+}
+
+@font-face {
+  font-family: 'HYQiHeiY2';
+  src: url(../fonts/汉仪旗黑Y2-55W.ttf)
+}
+
+@keyframes rotatingreversed {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.dashboard-park {
+  background:
+    url(../images/bg-dots.svg) left/vw(81px) repeat,
+    url(../images/bg-grid.svg) left/vw(162px) repeat,
+    #00123D;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+
+  .fullscreen-area {
+    position: fixed;
+    right: 16px;
+    // top: 16px;
+    padding-top: 16px;
+    cursor: pointer;
+    z-index: 999;
+    align-self: flex-start;
+  }
+
+  &::-webkit-scrollbar {
+    width: vw(6px);
+  }
+
+  &::-webkit-scrollbar-track-piece {
+    background: #011529;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(10, 204, 204, .3);
+    border: none;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #0ACCCC;
+  }
+
+  &.with-deco {
+    &:before {
+      content: '';
+      position: absolute;
+      top: vw(20px);
+      left: vw(23px);
+      width: vw(687px);
+      height: vw(14px);
+      background: url(../images/corner-deco.svg) center no-repeat;
+      background-size: contain;
+    }
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: vw(20px);
+      right: vw(23px);
+      width: vw(691px);
+      height: vw(15px);
+      background: url(../images/corner-deco-right.svg) center no-repeat;
+      background-size: contain;
+    }
+  }
+
+  &-hide {
+    >div {
+      opacity: 0;
+    }
+  }
+  .el-tag {
+    border-radius: 0;
+    line-height: vw(14px);
+    height: vw(16px);
+    font-family: 'DINAlternate-Bold';
+  
+    &--dark.el-tag--success {
+      background: #0ACC78;
+      border-color: #0ACC78;
+    }
+  }
+  
+  .is-hide-main-nav .el-main {
+    padding: 0;
+  }
+  
+  .is-hide-main-nav .app-container {
+    max-width: 100vw !important;
+  }
+  
+  .calendar-body,
+  .el-table__body-wrapper {
+    &::-webkit-scrollbar {
+      width: vw(6px);
+    }
+  
+    &::-webkit-scrollbar-track-piece {
+      background: #011529;
+    }
+  
+    &::-webkit-scrollbar-thumb {
+      background: rgba(10, 204, 204, .3);
+      border: none;
+    }
+  
+    &::-webkit-scrollbar-thumb:hover {
+      background: #0ACCCC;
+    }
+  }
+}
+

@@ -1,0 +1,33 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(panel) {
+  @include e(title) {
+    color: $--color-text-primary;
+    line-height: 32px;
+    margin: 16px 0;
+    font-size: $--font-size-extra-large;
+    display: flex;
+    align-items: center;
+  }
+
+  @include e(tools) {
+    margin-left: auto;
+
+    display: flex;
+    align-items: center;
+  }
+
+  @include e(collapse-control) {
+    margin-left: 24px;
+    height: 24px;
+  }
+
+  @include e(collapse-control-icon) {
+    transition: transform .2s;
+
+    @include when(rotated) {
+      transform: rotate(180deg);
+    }
+  }
+}

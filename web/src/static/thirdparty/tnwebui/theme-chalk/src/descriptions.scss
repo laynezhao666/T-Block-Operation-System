@@ -1,0 +1,30 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(descriptions) {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+@include b(descriptions-item) {
+  width: 50%;
+  min-height: 40px;
+  display: flex;
+  line-height: 22px;
+
+  @include e(label) {
+    flex-shrink: 0;
+    color: $--color-text-primary;
+    padding: 9px 0;
+    line-height: 22px;
+  }
+
+  @include e(content) {
+    color: $--color-text-regular;
+    padding: 9px 0;
+  }
+  
+  @include m(row) {
+    width: 100%;
+  }
+}

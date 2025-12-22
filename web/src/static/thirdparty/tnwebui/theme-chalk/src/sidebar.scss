@@ -1,0 +1,133 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(sidebar) {
+  background: $--fill-base;
+  width: 248px;
+  height: 100%;
+  box-shadow: 3px 3px 8px 2px rgba(216, 216, 216, .5);
+  border-right: 1px solid $--border-color-light;
+  transition: all .3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  z-index: 100;
+
+  .el-menu-item > span {
+    display: inline-block;
+    transition: all .3s;
+  }
+
+  @include m(collapsed) {
+    width: 88px;
+    overflow: hidden;
+
+    .el-sidebar-header__text,
+    .el-menu-item > span {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .el-sidebar-header__logo:after {
+      opacity: 1;
+    }
+
+    .el-sidebar-footer__collapse-icon {
+      margin-right: 32px;
+      transform: rotate(180deg);
+    }
+  }
+}
+
+@include b(sidebar-header) {
+  box-sizing: border-box;
+  height: 72px;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0 24px;
+  width: 248px;
+
+  @include e(image) {
+    width: 40px;
+    height: 40px;
+    margin-right: 16px;
+  }
+
+  @include e(text) {
+    transition: all .3s ease;
+  }
+
+  @include e(title) {
+    font-size: $--font-size-medium;
+    line-height: 19px;
+    margin-bottom: 6px;
+  }
+
+  @include e(sub) {
+    height: 16px;
+    line-height: 16px;
+    font-size: $--font-size-extra-small;
+    max-width: 128px;
+    color: #999;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  @include e(logo) {
+    position: relative;
+    height: 40px;
+
+    > * {
+      height: 40px;
+    }
+    
+    &:after {
+      content: "";
+      position: absolute;
+      left: 40px;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: #fff;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+    }
+  }
+}
+
+@include b(sidebar-nav) {
+  flex: 1;
+  width: 248px;
+  border-top: 1px solid $--border-color-light;
+  padding: 24px 0;
+  overflow: hidden;
+
+  &:hover {
+    overflow-y: auto;
+  }
+}
+
+@include b(sidebar-footer) {
+  height: 64px;
+  border-top: 1px solid $--border-color-light;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  &__collapse-icon {
+    color: #666;
+    font-size: 24px;
+    margin-right: 16px;
+    transition: all .3s ease;
+    cursor: pointer;
+
+    &:hover {
+      transition: all .2s;
+      color: $--color-text-primary;
+    }
+  }
+}

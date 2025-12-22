@@ -1,0 +1,198 @@
+@import "mixins/mixins";
+@import "common/var";
+@import "./input";
+@import "./popper";
+@import "./tag";
+@import "./cascader-panel";
+
+@include b(cascader) {
+  display: inline-block;
+  position: relative;
+  font-size: $--font-size-base;
+  line-height: $--input-height;
+
+  &:not(.is-disabled):hover {
+    .el-input__inner {
+      cursor: pointer;
+      border-color: $--input-hover-border;
+    }
+  }
+
+  .el-input {
+    cursor: pointer;
+    height: auto;
+
+    .el-input__inner {
+      text-overflow: ellipsis;
+
+      &:focus {
+        border-color: $--input-focus-border;
+      }
+    }
+
+    .tn-icon-drop {
+      transition: transform .3s;
+
+      @include when(reverse) {
+        transform: rotateZ(180deg);
+      }
+    }
+
+    .tn-icon-circle-clear:hover {
+      color: $--input-clear-hover-color;
+    }
+
+    @include when(focus) {
+      .el-input__inner {
+        border-color: $--input-focus-border;
+      }
+    }
+  }
+
+  @include m(medium) {
+    font-size: $--input-medium-font-size;
+    line-height: $--input-medium-height;
+  }
+
+  @include m(small) {
+    font-size: $--input-small-font-size;
+    line-height: $--input-small-height;
+  }
+
+  @include m(mini) {
+    font-size: $--input-mini-font-size;
+    line-height: $--input-mini-height;
+  }
+
+  @include when(disabled) {
+    .el-cascader__label {
+      z-index: #{$--index-normal + 1};
+      color: $--disabled-color-base;
+    }
+  }
+
+  @include e(dropdown) {
+    margin: 5px 0;
+    font-size: $--cascader-menu-font-size;
+    background: $--cascader-menu-fill;
+    border: $--cascader-menu-border;
+    border-radius: $--cascader-menu-radius;
+    box-shadow: $--cascader-menu-shadow;
+  }
+
+  @include e(tags) {
+    position: absolute;
+    left: 0;
+    right: 30px;
+    top: 50%;
+    text-align: left;
+    box-sizing: border-box;
+    line-height: normal;
+    white-space: normal;
+    z-index: $--index-normal;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    cursor: pointer;
+
+    &:hover ~ .el-input:before {
+      border-bottom: 2px solid $--input-border-color-hover;
+    }
+
+    .el-tag {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      text-overflow: ellipsis;
+
+      &.el-tag--info {
+        box-sizing: border-box;
+        border-color: transparent;
+        margin: 0px 4px 4px 0;
+        height: $--font-line-height-extra-small + 2px;
+        line-height: $--font-line-height-extra-small;
+        font-size: $--font-size-extra-small;
+        color: $--color-text-regular;
+      }
+
+      &:not(.is-hit) {
+        border-color: transparent;
+      }
+
+      > span {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .el-icon-close {
+        flex: none;
+        background-color: $--color-text-placeholder;
+        color: $--color-white;
+
+        &:hover {
+          background-color: $--color-text-secondary;
+        }
+      }
+    }
+  }
+
+  @include e(suggestion-panel) {
+    border-radius: $--cascader-menu-radius;
+  }
+
+  @include e(suggestion-list) {
+    max-height: 240px;
+    margin: 0;
+    padding: 0;
+    font-size: $--font-size-base;
+    color: $--cascader-menu-font-color;
+    text-align: center;
+  }
+
+  @include e(suggestion-item) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    padding: 0 16px;
+    text-align: left;
+    outline: none;
+    cursor: pointer;
+
+    &:hover, &:focus {
+      background: $--cascader-node-background-hover;
+    }
+
+    &.is-checked {
+      color: $--cascader-menu-selected-font-color;
+      font-weight: bold;
+    }
+
+    > span {
+      margin-right: 10px;
+    }
+  }
+
+  @include e(empty-text) {
+    margin: 10px 0;
+    color: $--cascader-color-empty;
+  }
+
+  @include e(search-input) {
+    flex: 1;
+    height: 22px;
+    min-width: 60px;
+    padding: 0;
+    margin: 2px 0;
+    color: $--cascader-menu-font-color;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: $--color-text-placeholder;
+    }
+  }
+}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title></title>
+  <script src="/static/thirdparty/preload-inject.js"></script>
+
+  <% if(process.env.NODE_ENV==="development" ){ %>
+    <% } else { %>
+      <% } %>
+        <%= require('html-loader!./'+htmlWebpackPlugin.options.customTemp.header) %>
+          <script>
+            // var testChrome = window.navigator.userAgent.match(/Chrome\/(\d*)\./)
+            // if (!testChrome || parseInt(testChrome[1]) < 77){
+            //   alert('您的浏览器需要更新。推荐您使用 Chrome 浏览器，以获得最佳体验。')
+            // }
+          </script>
+
+          <script src="/static/thirdparty/bff-menu.js"></script>
+</head>
+
+<body>
+  <%= require('html-loader!./'+htmlWebpackPlugin.options.customTemp.body) %>
+    <div id="__TNBL__"></div>
+</body>
+<%= require('html-loader!./'+htmlWebpackPlugin.options.customTemp.footer) %>
+
+</html>

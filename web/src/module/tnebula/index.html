@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title></title>
+  <script>
+    window.nebulaLogTime = function (source) {
+      const win = window.parent || window;
+      const p = win.nebulaPerfObj || (win.nebulaPerfObj = {});
+      if (p[source]) {
+        console.log('repeat');
+        console.log(source);
+      }
+      p[source] = +new Date();
+    };
+    window.nebulaLogTime('main-html-load-start');
+  </script>
+
+  <% if(process.env.NODE_ENV==="development" ){ %>
+    <% } else { %>
+      <script type='text/javascript'>
+        ; (function () {
+          function rot13(str) {
+            if (!str) {
+              return '';
+            }
+            const start = 'a'.charCodeAt(0);
+            const end = 'z'.charCodeAt(0);
+            const strList = str.split('');
+            let judge; let replace;
+            for (let i = 0; i < str.length; i++) {
+              judge = strList[i].charCodeAt(0);
+              if (judge <= end && judge >= start) {
+                replace = start + ((judge - start + 13) % 26);
+                strList[i] = String.fromCharCode(replace);
+              }
+            }
+            return strList.join('');
+          }
+          function getCookie(cname) {
+            // eslint-disable-next-line prefer-template
+            const name = cname + '=';
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const ca = decodedCookie.split(';');
+
+            for (let i = 0; i < ca.length; i++) {
+              let c = ca[i];
+
+              while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+              }
+              if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+              }
+            }
+            return '';
+          } 
+        }());
+      </script>
+      <% } %>
+        <%= require('html-loader!./'+htmlWebpackPlugin.options.customTemp.header) %>
+</head>
+
+<body>
+  <script type="systemjs-importmap">
+    {
+      "imports": {
+        "Vue":"/static/thirdparty/vue-2.6.8/vue.min.js",
+        "VueI18n":"/static/thirdparty/vue-i18n-5.0.3/vue-i18n.min.js",
+        "element-ui":"/static/thirdparty/tnwebui/index.js",
+        "ELEMENT":"/static/thirdparty/tnwebui/index.js",
+        "jQuery":"/static/thirdparty/jquery-3.2.1/jquery.min.js",
+        "echarts":"/static/thirdparty/echarts.min.js",
+        "Qs":"/static/thirdparty/qs.js",
+        "axios":"/static/thirdparty/axios.min.js",
+        "moment":"/static/thirdparty/moment.min.js",
+        "_":"/static/thirdparty/lodash.min.js"
+      }
+    }
+  </script>
+
+  <!-- <script type="systemjs-importmap"  src="/importmap.json"></script>  -->
+  <script>window.importmapJsonPath = [];
+  </script>
+  <% if(process.env.MODULE_DEPLOY && process.env.SPLIT_DEPLOY_FLAG==='YES' ){ %>
+    <% for(modulename in process.env.MODULE_DEPLOY){ %>
+      <script>window.importmapJsonPath.push('/<%=modulename %>/apps.json');
+      </script>
+      <% }%>
+        <% } else { %>
+          <script>window.importmapJsonPath.push('/apps.json');
+          </script>
+          <% }%>
+
+            <script type='text/javascript' src="/static/microfrontend/index.js"></script>
+
+            <%= require('html-loader!./'+htmlWebpackPlugin.options.customTemp.body) %>
+              <div id="__TNBL__"></div>
+</body>
+<%= require('html-loader!./'+htmlWebpackPlugin.options.customTemp.footer) %>
+  <script>
+    window.nebulaLogTime('main-html-load-end');
+  </script>
+
+</html>

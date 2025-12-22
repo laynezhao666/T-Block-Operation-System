@@ -1,0 +1,63 @@
+etrpc:
+  service_name: alarm-server
+  service_port: ${PORT_ALARM_SERVER}
+global:
+  max_frame_size: 1048576000
+  namespace: Production
+  local_ip: ${LOCAL_IP}
+server:
+  filter:
+    - recovery
+  server: ${etrpc.service_name}
+  service:
+    - ip: 0.0.0.0
+      name: ${etrpc.service_name}
+      network: tcp
+      port: ${etrpc.service_port}
+      protocol: http
+    - name: trpc.kafka.tbos.ruleValid
+      address: ${KAFKA_ADDR}?topics=${KAFKA_ALARM_VALID_TOPIC}&group=alarm-server&initial=newest&batch=50&batchFlush=500
+      protocol: kafka
+    - name: trpc.timer.tbos.alarmValid
+      port: 1000
+      network: "10,40 * * * * * ?startAtOnce=0"
+      protocol: timer
+      timeout: 2000
+    - name: trpc.timer.tbos.delRuleRecord
+      port: 1001
+      network: "0 40 12 * * * ?startAtOnce=0"
+      protocol: timer
+      timeout: 2000
+client:
+  service:
+    - name: trpc.mysql.tbos.alarm
+      target: dsn://${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_ADDR})/${MYSQL_DATABASE}?charset=utf8mb4&parseTime=True&loc=Local
+    - name: trpc.mysql.tbos.alarm_readonly
+      target: dsn://${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_ADDR})/${MYSQL_DATABASE}?charset=utf8mb4&parseTime=True&loc=Local
+    - name: trpc.redis.tbos.valid
+      target: redis://:${REDIS_PASSWORD}@${REDIS_ADDR}/0
+    - callee: tbos.cmdb.ConfigQuery
+      name: cmdb
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_CMDB}
+    - callee: tbos.alarm.AlarmCompute
+      name: alarm-compute
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_ALARM_COMPUTE}
+
+plugins:
+  database:
+    gorm:
+      logger:
+        colorful: true
+        ignore_record_not_found_error: true
+        log_level: 3
+        max_sql_size: 256
+        slow_threshold: 3000
+  log:
+    default:
+      - caller_skip: 3
+        enable_color: true
+        formatter: console
+        level: info
+        writer: console

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 22.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{clip-path:url(#SVGID_2_);}
+</style>
+<title>Oval</title>
+<desc>Created with Sketch.</desc>
+<g id="Symbols">
+	<g id="loading蓝" transform="translate(-2.000000, -2.000000)">
+		<path id="Oval" class="st0" d="M19.8,16.4c0.7-1.3,1.2-2.8,1.2-4.4c0-5-4-9-9-9s-9,4-9,9s4,9,9,9"/>
+	</g>
+</g>
+<g>
+	<defs>
+		<path id="SVGID_1_" d="M18.7,14.9c0.8-1.5,1.3-3.2,1.3-4.9c0-5.5-4.5-10-10-10S0,4.5,0,10s4.5,10,10,10c0.6,0,1-0.4,1-1
+			s-0.4-1-1-1c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8c0,1.4-0.4,2.8-1,3.9c-0.3,0.5-0.1,1.1,0.4,1.4C17.8,15.6,18.4,15.4,18.7,14.9z"
+			/>
+	</defs>
+	<clipPath id="SVGID_2_">
+		<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+	</clipPath>
+	<g class="st1">
+		<defs>
+			<rect id="SVGID_3_" x="-1" y="-1" width="22" height="22"/>
+		</defs>
+		<clipPath id="SVGID_4_">
+			<use xlink:href="#SVGID_3_"  style="overflow:visible;"/>
+		</clipPath>
+		<g style="clip-path:url(#SVGID_4_);">
+			<image style="overflow:visible;" width="22" height="22" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAACXBIWXMAAAsSAAALEgHS3X78AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA+ZJREFUeNpcVLuOJEUQrMqq7pkdlr0VxqFzEMICBw8JhH1fgMs/YMEHIVzEB+Cfzj8D5wyEBbvoZt+z3V2ZSUR2zZ7EjFpdXY/IyMjIyp//+PtPKSXhYzmXnLykLCWb1YRvS6lisWK9YjzI+o5vcV/nsQ/veGR9CycVG1L/5ewpe05Zc7LiLtjIRcccl5/29UdwIksn5hgazjjIMaoBPBEcewLC8RRPIJa4FsAMEIPkmWg9wwDFRsF5HEmFoJxjusE4wM1Sep8BWQsQDN9ueWXLjPgPsBV0lQExCArkkLSCh3pokH3G2dGcHylCrCmWI+suFtfWmlBTMs2pKLRGPOxdz6yMA91lBDOo6igcV7OtLJQEn1hDJgkFOtsosAcog3QiUrFfU1dWaQn39+wALlkkHJJCc0oWegKwIsuqbgNAawcMcDzQWKQlVfgLckbEKCYZRkEZEgFrL2aS1Qm04YAcRoAOYTtaDudZF+rMSC1sgmrjx8NkxKzNO1jXbtOzoI9HSLQBwIj5gXMesiUUz2nXkKLRtznKGm6ViGqRrh59jjmyIzBBdwA94bg3CeVafRyeXbVpNUT23Cd5XFBRepnF4/JCk4Ldc01+jvEzgmJ/PXZtJxXnOQ5g5fdTUx1bKxMopm1du8Dzw3H+/7+jz4/jCkYNlfcKeJVMcT2s4tGKiiQUKU6ltevd3D67LuU3JP4S8xPOt+4W7rVekOhp+m+BK6ghPWCNC2ws2hCOWdznTWuHxdN174+fPZrIvwGJU2GNRKCQm7B3fL1baiFjDFRYVOfFY2gBhVvbjLWt6jTnfBiTT5Hnon/kobxa3e5fQNlP2DvCJOmqHKTA2FNrPRU226iqj+IKQ7dt0yUxZfP5A7PmUelygcK8BfNzggPwgIMv0F/PwkEWiljFIYX9jdfksKjNkrUCBMwbdFzwvZSm7QGepr98f3+Tz3d/u+S/AH6iHiacsfS8mH0E8IHMa6vSMtPHwamK7cybRe1Sw6XUcjO0pegdrH9ymNLHd4eHdx9u93A6XXIG8LFf53TXhCDnwDsT9JcCRbdqSpbIRLWWNg2ljXgaQBl0c5jj+Otfv4eA5RY3+h6f/0KKS9TpH4BeIMgF9l5i/hI9nuL2mgukAPiECm/WIAonGCpup4j258noZ2D89Xe/ZFA9APAWNbkC4GmOrsQl329cOgVWwIUDXY+gFQ8EC2mque1wJ70bB//07jEYv/nybZa5PUK8e+y5hQNowyuA7QG6x9wewfayabjalsZu1i20XmA5XHTaCI7xZlbfTotf9s766uHbpPfTrEMl63vsBfN0A4AbBoAsV3hf/yfAAF8ft2ShRMVfAAAAAElFTkSuQmCC"  transform="matrix(1 0 0 1 -1 -1)">
+			</image>
+		</g>
+	</g>
+</g>
+</svg>

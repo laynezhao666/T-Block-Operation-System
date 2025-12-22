@@ -1,0 +1,32 @@
+go 1.23.0
+
+toolchain go1.23.4
+
+use (
+	agent
+	alarm-compute
+	alarm-manage
+	alarm-server
+	cgi
+	cmdb
+	collector
+	common
+	data-cache
+	data-compute
+	data-query
+	data-store
+	etrpc-go
+	scheduler
+	trpcprotocol/agent
+	trpcprotocol/alarm-compute
+	trpcprotocol/alarm-manage
+	trpcprotocol/alarm-server
+	trpcprotocol/cgi
+	trpcprotocol/cmdb
+	trpcprotocol/collector
+	trpcprotocol/data-cache
+	trpcprotocol/data-compute
+	trpcprotocol/data-query
+	trpcprotocol/scheduler
+	trpcprotocol/tboxmonitor
+)

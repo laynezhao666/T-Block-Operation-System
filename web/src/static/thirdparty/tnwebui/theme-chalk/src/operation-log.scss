@@ -1,0 +1,64 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(operation-log) {
+    .i-collapse {
+        .log-item {
+          display: flex;
+          flex: 1;
+          align-items: center;
+          padding-left: 26px;
+          &__index {
+            display: flex;
+            box-sizing: border-box;
+            width: 20px;
+            height: 20px;
+            line-height: 16px;
+            border-radius: 50%;
+            border: 2px solid #3ecc36;
+            font-size: 13px;
+            color: #3ecc36;
+            margin-right: 10px;
+            justify-content: center;
+            font-weight: 500;
+          }
+          &__type {
+            font-size: 14px;
+            color: #333;
+            margin: 0px;
+          }
+          &__user {
+            margin-left: 10px;
+            font-size: 14px;
+            color: #999;
+            width: 180px;
+          }
+          &__time {
+            font-size: 14px;
+            color: #999;
+            width: 150px;
+          }
+        }
+        .mail-info {
+          width: 100%;
+          font-size: 14px;
+        }
+        .mail-header {
+          line-height: 40px;
+          color: #999;
+        }
+        .mail-content {
+          border: 1px solid #f0f0f0;
+          padding: 5px 15px 15px;
+        }
+        /deep/ .el-collapse-item__arrow {
+          margin-right: 24px;
+        }
+      }
+      .log-item .log-item__user {
+        margin: 0 10px 0 auto;
+      }
+      .i-log .el-collapse-item__title {
+        width: 100% !important;
+      }
+}

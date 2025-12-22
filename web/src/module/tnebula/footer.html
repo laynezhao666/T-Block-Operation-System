@@ -1,0 +1,15 @@
+<script>
+  if (window.jQuery) {
+    define('jQuery', [], function () { return window.jQuery })
+  }
+  if (window.Vue) {
+    define('Vue', [], function () { return window.Vue })
+  }
+  if (window.VueI18n) {
+    define('VueI18n', [], function () { return window.VueI18n })
+  }
+  if (window.ELEMENT) {
+    define('ELEMENT', [], function () { return window.ELEMENT })
+    define('element-ui', [], function () { return window.ELEMENT })
+  }
+</script> 

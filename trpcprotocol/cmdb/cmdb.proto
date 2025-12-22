@@ -1,0 +1,408 @@
+syntax = "proto3";
+
+package tbos.cmdb;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "trpcprotocol/cmdb";
+
+message ReqSaveMozu {
+  int32 mozu_id             = 1;  // 模组ID
+  string mozu_name          = 2;  // 模组名称
+  string mozu_code          = 3;  // 模组编码
+  int32 mozu_type           = 4;  // 模组类型
+  string belong_building    = 5;  // 所属楼栋
+  string belong_campus      = 6;  // 所属园区
+  string belong_campus_code = 7;  // 所属园区编码
+}
+
+// 获取模组列表请求参数
+message ReqListMozu {
+  repeated int32 mozu_id = 1;  // 模组ID列表
+  string mozu_name       = 2;  // 模组名称
+  string mozu_code       = 3;  // 模组编码
+}
+
+// 获取模组列表响应参数
+message RspListMozu {
+  repeated MozuInfo list = 1;  // 模组列表
+  // 模组信息
+  message MozuInfo {
+    int32 id                  = 1;   // 主键ID
+    int32 mozu_id             = 2;   // 模组ID
+    string mozu_name          = 3;   // 模组名称
+    string mozu_code          = 4;   // 模组编码
+    int32 mozu_type           = 5;   // 模组类型
+    string belong_building    = 6;   // 所属楼栋
+    string belong_campus      = 7;   // 所属园区
+    string belong_campus_code = 8;   // 所属园区编码
+    string publish_version    = 9;   // 配置版本
+    string alarm_version      = 10;  // 告警版本
+    string create_at          = 11;  // 创建时间
+    string update_at          = 12;  // 更新时间
+  }
+}
+
+// 删除模组请求参数
+message ReqDeleteMozu {
+  repeated int32 mozu_id = 1;  // 模组ID列表
+}
+
+// 导入配置模型请求参数
+message ReqImportModel {
+  int32 mozu_id                = 1;  // 模组ID
+  string version               = 2;  // 版本号
+  ExcelFile device_entity      = 3;  // 标准设备
+  ExcelFile device_point       = 4;  // 标准测点
+  ExcelFile collector_device   = 5;  // 采集设备
+  ExcelFile collector_template = 6;  // 采集模版
+  ExcelFile template_point     = 7;  // 采集模版测点
+  ExcelFile alarm_strategy     = 8;  // 告警策略
+
+  message ExcelFile {
+    string filename = 1;  // 文件名
+    bytes content   = 2;  // 文件内容
+  }
+}
+
+// 导入配置模型错误信息
+message RspImportModel {
+  repeated string errs = 1;  // 错误信息
+}
+
+// 配置导入相关接口
+service ConfigBuild {
+  // @alias=/ConfigBuild/SaveMozu   保存模组信息
+  rpc SaveMozu(ReqSaveMozu) returns (google.protobuf.Empty);
+  // @alias=/ConfigBuild/ListMozu  查询模组信息
+  rpc ListMozu(ReqListMozu) returns (RspListMozu);
+  // @alias=/ConfigBuild/DeleteMozu  删除模组信息
+  rpc DeleteMozu(ReqDeleteMozu) returns (google.protobuf.Empty);
+  // @alias=/ConfigBuild/ImportModel  导入模组配置信息
+  rpc ImportModel(ReqImportModel) returns (RspImportModel);
+}
+
+/*--------------------------------------------------------------------------*/
+
+// 批量获取采集器下所有子设备-请求参数
+message ReqGetCollectorDevice {
+  repeated string device_numbers = 1;  // 采集器设备编号列表
+}
+
+// 批量获取采集器下所有子设备-响应参数
+message RspGetCollectorDevice {
+  map<string, CollectorDeviceInfo> config_map = 1;  // 各采集器对应的设备信息
+
+  // 采集子设备列表
+  message CollectorDeviceInfo {
+    string device_gid              = 1;   // 设备GID
+    string device_number           = 2;   // 设备编码
+    string device_type_en          = 3;   // 设备类型英文
+    string device_type_zh          = 5;   // 设备类型中文
+    int32 collector_type           = 6;   // 采集器类型
+    google.protobuf.Struct channel = 7;   // 通道详细信息
+    google.protobuf.Struct tpl     = 8;   // 模版信息
+    int32 mozu_id                  = 9;   // 所属模组ID
+    string device_code             = 10;  // 设备代号
+    repeated SubDevice sub_devices = 11;  // 子设备列表
+    string device_name             = 12;  // 设备名称
+
+    // 采集子设备
+    message SubDevice {
+      string device_gid              = 1;   // 设备GID
+      string device_number           = 2;   // 设备编码
+      string device_type_en          = 3;   // 设备类型英文
+      string device_type_zh          = 4;   // 设备类型中文
+      int32 collector_type           = 5;   // 采集器类型
+      google.protobuf.Struct channel = 6;   // 通道详细信息
+      google.protobuf.Struct tpl     = 7;   // 模版信息
+      int32 mozu_id                  = 8;   // 所属模组ID
+      string device_code             = 9;   // 设备代号
+      string device_name             = 10;  // 设备名称
+    }
+  }
+}
+
+// 批量获取采集器下所有标准测点-请求参数
+message ReqGetCollectorPoint {
+  repeated string device_numbers = 1;  // 采集器设备编号列表
+}
+
+// 批量获取采集器下所有标准测点-响应参数
+message RspGetCollectorPoint {
+  map<string, CollectorTemplateInfo> config_map = 1;  // 各采集器对应的测点信息
+
+  // 采集模版信息
+  message CollectorTemplateInfo {
+    repeated DevicePoint device_points = 1;  // 标准测点列表
+    // 标准测点
+    message DevicePoint {
+      string device_gid        = 1;   // 设备GID
+      string device_number     = 2;   // 设备编码
+      string point_name_en     = 3;   // 测点名称英文
+      string expression        = 4;   // 测点表达式
+      string expression_map    = 5;   // 测点映射(设备编号)
+      string point_name_zh     = 6;   // 测点名称中文
+      string point_key         = 7;   // 测点标识
+      int32 point_type         = 8;   // 测点类型
+      string point_feature     = 9;   // 测点特征
+      string point_group       = 10;  // 测点分组
+      string point_rw          = 11;  // 测点读写分类
+      string point_level       = 12;  // 测点级别
+      int32 point_standard     = 13;  // 是否标准测点
+      int32 point_kpi          = 14;  // 是否KPI测点
+      string expression_map_zh = 17;  // 测点映射(设备编号)
+      string value_type        = 18;  // 测点值类型
+      string value_valid_range = 19;  // 测点值有效范围
+      string value_unit        = 20;  // 测点值单位
+      string value_precision   = 21;  // 测点值精度
+      string value_enum        = 22;  // 值枚举映射
+      int32 mozu_id            = 23;  // 所属模组ID
+    }
+  }
+}
+
+// 批量获取采集模版信息-请求参数
+message ReqGetCollectorTemplate {
+  repeated string template_names = 1;  // 采集模版名称列表
+}
+
+// 批量获取采集模版信息-响应参数
+message RspGetCollectorTemplate {
+  map<string, CollectorTemplateInfo> config_map = 1;  // 各采集器对应的配置信息
+
+  // 采集模版
+  message CollectorTemplateInfo {
+    CollectorTemplate drvinfo     = 1;  // 模版基础信息
+    repeated TemplatePoint points = 2;  // 模版对应的测点
+
+    // 模版基础信息
+    message CollectorTemplate {
+      string cls     = 1;  // 设备类型英文
+      string drvlib  = 2;  // 协议类型
+      string protver = 3;  // 协议版本
+      string vendor  = 4;  // 设备制造商
+      string extend  = 5;  // 扩展字段
+    }
+
+    // 模版测点信息
+    message TemplatePoint {
+      string point_name_en             = 1;   // 测点名称英文
+      string point_type                = 2;   // 测点类型
+      string point_rw                  = 3;   // 测点读写分类
+      google.protobuf.Struct deltadef  = 4;   // 变化定义规则
+      google.protobuf.Struct expdef    = 5;   // 表达式定义规则
+      google.protobuf.Struct protdef   = 6;   // 协议定义规则
+      google.protobuf.Struct valdef    = 7;   // 值定义规则
+      google.protobuf.Struct simulator = 8;   // 模拟定义规则
+      string sub_device                = 9;   // 子设备名称
+      string point_name_zh             = 10;  // 测点名称中文
+      google.protobuf.Struct verifydef = 11;  // 校验定义规则
+    }
+  }
+}
+
+// 获取配置更新时间-响应参数
+message RspGetConfigModifyTime {
+  map<string, ModifyTime> config_map = 1;  // 各采集器对应的配置信息
+  message ModifyTime {
+    string collector = 1;
+    string point     = 2;
+  }
+}
+
+// 导出所有配置为文件-请求参数
+message ReqExportCollectorConfig {
+  int32 mozu_id                 = 1;  // 模组ID
+  repeated string device_number = 2;  // 设备编号
+  int32 collector_type          = 3;  // 采集设备类型
+}
+
+// 获取设备实体列表-请求参数
+message ReqGetDeviceEntity {
+  repeated string device_gid                 = 1;   // 设备GID
+  repeated string device_number              = 2;   // 设备编码
+  repeated int32 mozu_id                     = 3;   // 所属模组ID
+  repeated int32 enable_status               = 4;   // 可用状态
+  repeated string parent_device_number       = 5;   // 父级设备编码
+  repeated string idc_area                   = 6;   // 机房区域
+  repeated string device_type_en             = 7;   // 设备种类英文
+  repeated string device_type_zh             = 8;   // 设备种类中文
+  repeated string application_type_en        = 9;   // 应用类型英文
+  repeated string application_type_zh        = 10;  // 应用类型中文
+  repeated string belong_application_type_en = 11;  // 所属应用类型
+  string belong_collector                    = 14;  // 所属采集器
+  int32 page                                 = 12;  // 开始页
+  int32 size                                 = 13;  // 页大小
+}
+
+// 获取设备实体列表-响应参数
+message RspGetDeviceEntity {
+  repeated DeviceEntity list = 1;  // 测点列表
+  int32 total                = 2;  // 总共数量
+
+  // 设备实体对象
+  message DeviceEntity {
+    int64 id                          = 1;   // 主键ID
+    string device_gid                 = 2;   // 设备GID
+    string device_number              = 3;   // 设备编码
+    string device_number_show         = 4;   // 展示编码
+    string device_no                  = 5;   // 设备编号,同层同类型设备序号
+    string device_name                = 6;   // 设备名称
+    int32 mozu_id                     = 7;   // 所属模组ID
+    string mozu_name                  = 8;   // 模组名称
+    string idc_area                   = 9;   // 机房区域
+    string func_room                  = 10;  // 方仓/功能间
+    string parent_device_number       = 11;  // 父级设备编码
+    int32 enable_status               = 12;  // 可用状态
+    string device_type_en             = 13;  // 设备种类英文
+    string device_type_zh             = 14;  // 设备种类中文
+    string application_type_en        = 15;  // 应用类型英文
+    string application_type_zh        = 16;  // 应用类型中文
+    string belong_application_type_en = 17;  // 所属应用类型
+    string create_at                  = 18;  // 记录创建时间
+    string update_at                  = 19;  // 记录上次更新时间
+    string device_number_route        = 20;  // 设备编号路由
+  }
+}
+
+// 查询设备测点列表-请求参数
+message ReqGetDevicePoint {
+  repeated string device_gid       = 1;   // 设备GID
+  repeated string device_number    = 2;   // 设备编码
+  repeated string belong_collector = 3;   // 归属采集器
+  repeated string point_name_en    = 4;   // 测点英文
+  repeated string point_name_zh    = 5;   // 测点中文
+  repeated string point_key        = 6;   // 测点标识
+  repeated int32 point_type        = 7;   // 测点类型
+  repeated string point_rw         = 8;   // 测点读写分类
+  repeated string point_level      = 9;   // 测点级别
+  repeated int32 mozu_id           = 10;  // 所属模组ID
+  int32 page                       = 11;  // 开始页
+  int32 size                       = 12;  // 页大小
+}
+
+// 查询设备测点列表-响应参数
+message RspGetDevicePoint {
+  repeated DevicePoint list = 1;  // 测点列表
+  int32 total               = 2;  // 总共数量
+
+  // 设备测点对象
+  message DevicePoint {
+    int64 id                 = 1;   // 主键ID
+    string device_gid        = 2;   // 设备GID
+    string device_number     = 3;   // 设备编码
+    string belong_collector  = 4;   // 归属采集器
+    string point_name_en     = 5;   // 测点名称英文
+    string point_name_zh     = 6;   // 测点名称中文
+    string point_key         = 7;   // 测点标识
+    int32 point_type         = 8;   // 测点类型
+    string point_feature     = 9;   // 测点特征
+    string point_group       = 10;  // 测点分组
+    string point_rw          = 11;  // 测点读写分类
+    string point_level       = 12;  // 测点级别
+    int32 point_standard     = 13;  // 是否标准测点
+    int32 point_kpi          = 25;  // 是否KPI测点
+    string expression        = 14;  // 测点表达式
+    string expression_map    = 15;  // 测点映射(设备编号)
+    string value_type        = 16;  // 测点值类型
+    string value_valid_range = 17;  // 测点值有效范围
+    string value_unit        = 18;  // 测点值单位
+    string value_precision   = 19;  // 测点值精度
+    string value_enum        = 20;  // 值枚举映射
+    int32 mozu_id            = 21;  // 所属模组ID
+    string template_version  = 22;  // 模版版本
+    string create_at         = 23;  // 记录创建时间
+    string update_at         = 24;  // 记录上次更新时间
+  }
+}
+
+// 获取模组信息-请求参数
+message ReqGetMozuInfo {
+  repeated int32 mozu_id = 1;  // 模组ID列表
+}
+
+// 获取模组信息-响应参数
+message RspGetMozuInfo {
+  repeated MozuInfo list = 1;  // 模组信息
+  int32 total            = 2;  // 总共数量
+
+  // 模组信息
+  message MozuInfo {
+    int32 mozu_id             = 2;   // 模组ID
+    string mozu_name          = 3;   // 模组名称
+    string mozu_code          = 4;   // 模组编码
+    int32 mozu_type           = 5;   // 模组类型
+    string belong_building    = 6;   // 所属楼栋
+    string belong_campus      = 7;   // 所属园区
+    string belong_campus_code = 8;   // 所属园区编码
+    string publish_version    = 9;   // 下发版本
+    string alarm_version      = 10;  // 告警版本
+  }
+}
+
+message ReqListCollectorDevice {
+  repeated string device_gid     = 1;   // 设备GID列表
+  repeated string device_number  = 2;   // 设备编码列表
+  repeated int32 collector_type  = 3;   // 采集器类型
+  repeated string device_type_en = 4;   // 采集设备类型
+  repeated string template_name  = 5;   // 采集模版名称
+  repeated int32 mozu_id         = 6;   // 模组ID列表
+  repeated string protocol_type  = 7;   // 采集协议
+  int32 page                     = 9;   // 页码
+  int32 size                     = 10;  // 每页数量
+  repeated string device_sn      = 11;  // 设备SN列表
+}
+
+message RspListCollectorDevice {
+  repeated CollectorDevice list = 1;  // 采集设备列表
+  int32 total                   = 2;  // 总共数量
+}
+
+message CollectorDevice {
+  string device_gid           = 1;   // 设备GID
+  string device_number        = 2;   // 设备编码
+  string device_code          = 3;   // 设备代号
+  string device_name          = 4;   // 设备名称
+  string device_no            = 5;   // 设备编号,同层同类型设备序号
+  string device_type_en       = 6;   // 采集设备类型英文
+  string device_type_zh       = 7;   // 采集设备类型中文
+  int32 collector_type        = 8;   // 采集类型,1:Tbox,2: Tbox下子设备，3：厂商采集器，4：厂商采集器子设备
+  string channel_type         = 9;   // 通道类型
+  string channel_id           = 10;  // 通道地址
+  string channel_link         = 11;  // 通道详细信息
+  string profile              = 12;  // 模版详细配置
+  int32 active_status         = 13;  // 激活状态
+  string template_name        = 14;  // 模版名称
+  string template_info        = 15;  // 模版信息
+  string parent_device_number = 16;  // 父级设备编号
+  int32 mozu_id               = 17;  // 所属模组ID
+  string room_name            = 18;  // 所属房间名称
+  string extend               = 19;  // 扩展字段
+  string device_sn            = 20;  // 设备SN
+}
+
+// 配置查询相关接口
+service ConfigQuery {
+  // @alias=/ConfigQuery/GetCollectorDevice   获取采集器下子设备
+  rpc GetCollectorDevice(ReqGetCollectorDevice) returns (RspGetCollectorDevice);
+  // @alias=/ConfigQuery/GetCollectorPoint   获取采集器下的标准测点
+  rpc GetCollectorPoint(ReqGetCollectorPoint) returns (RspGetCollectorPoint);
+  // @alias=/ConfigQuery/GetCollectorTemplate   获取采集模版配置信息
+  rpc GetCollectorTemplate(ReqGetCollectorTemplate) returns (RspGetCollectorTemplate);
+  // @alias=/ConfigQuery/GetConfigModifyTime   获取配置更新时间
+  rpc GetConfigModifyTime(ReqGetCollectorDevice) returns (RspGetConfigModifyTime);
+  // @alias=/ConfigQuery/ExportCollectorConfig   按模组导出所有的配置
+  rpc ExportCollectorConfig(ReqExportCollectorConfig) returns (google.protobuf.Empty);
+
+  // @alias=/ConfigQuery/ListCollectorDevice   获取采集器列表
+  rpc ListCollectorDevice(ReqListCollectorDevice) returns (RspListCollectorDevice);
+  // @alias=/ConfigQuery/GetDeviceEntity   获取标准设备
+  rpc GetDeviceEntity(ReqGetDeviceEntity) returns (RspGetDeviceEntity);
+  // @alias=/ConfigQuery/GetDevicePoint   获取标准测点
+  rpc GetDevicePoint(ReqGetDevicePoint) returns (RspGetDevicePoint);
+
+  // @alias=/ConfigQuery/GetMozuInfo   获取模组信息
+  rpc GetMozuInfo(ReqGetMozuInfo) returns (RspGetMozuInfo);
+}

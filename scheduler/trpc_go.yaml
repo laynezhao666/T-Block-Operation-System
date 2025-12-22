@@ -1,0 +1,60 @@
+etrpc:
+  service_name: scheduler
+  service_port: ${PORT_SCHEDULER}
+global:
+  max_frame_size: 1048576000
+  namespace: Production
+  local_ip: ${LOCAL_IP}
+server:
+  filter:
+    - recovery
+  server: ${etrpc.service_name}
+  service:
+    - ip: 0.0.0.0
+      name: ${etrpc.service_name}
+      network: tcp
+      port: ${etrpc.service_port}
+      protocol: http
+client:
+  network: tcp
+  service:
+    - name: trpc.mysql.tbos
+      target: dns://${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_ADDR})/${MYSQL_DATABASE}?charset=utf8mb4&parseTime=True&loc=Local
+    - name: trpc.redis.tbos
+      target: redis://:${REDIS_PASSWORD}@${REDIS_ADDR}/0
+    - callee: tbos.data.Strategy
+      name: data-compute
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_DATA_COMPUTE}
+    - callee: tbos.AlarmComputeService
+      name: alarm-compute
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_ALARM_COMPUTE}
+    - callee: tbos.TaskConfig
+      name: agent
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_AGENT}
+plugins:
+  database:
+    gorm:
+      logger:
+        colorful: true
+        ignore_record_not_found_error: true
+        log_level: 3
+        max_sql_size: 256
+        slow_threshold: 3000
+  log:
+    default:
+      - caller_skip: 3
+        enable_color: true
+        formatter: console
+        level: info
+        writer: console
+
+scheduler:
+  - type: point
+    set_group:
+    filter_mozu: []
+  - type: alarm
+    set_group:
+    filter_mozu: []

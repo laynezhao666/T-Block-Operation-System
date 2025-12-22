@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package ="parse/test";
+
+message Response1{
+  int32 code = 1;
+  string message = 2;
+  bytes data = 3;
+}
+
+message Response2{
+  int32 code = 1;
+  string message = 2;
+}

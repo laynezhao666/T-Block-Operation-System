@@ -1,0 +1,103 @@
+@CHARSET "UTF-8";
+/*头部菜单子菜单宽度*/
+.__oldstatic__ .pop-nav-task .nav-task-item p a {
+	width: 170px;
+	white-space:normal;
+}
+.__oldstatic__ .login:hover .popup{
+	display: block;
+}
+
+.__oldstatic__ .wr-sidebar .sidebar-nav li{
+	padding-left: 0px !important;
+}
+
+.__oldstatic__ .sidebar-nav li a{
+	display:block;
+	padding-left:35px;
+}
+
+.__oldstatic__ .light-color{
+	color: #1470cc;;
+}
+
+/*tips样式*/
+.__oldstatic__ div[aria-labelledby='title:FO-Tips'][role='dialog'] .ui-artdialog {
+	border: 2px solid #216ab4;    
+}
+
+.__oldstatic__ .wr-sidebar{
+	z-index: 100 !important;
+}
+
+.__oldstatic__ .fo-grid{
+	border-spacing: 0;
+    border-collapse: collapse;
+    border: 1px solid #F0F0F0;
+    line-height: 40px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.__oldstatic__ .fo-grid tr.odd{
+	background-color:#FBFBFB;
+}
+
+.__oldstatic__ .fo-grid tr.even{
+	background-color:#FBFBFB;
+}
+
+.__oldstatic__ .fo-grid tr:hover{
+	background: rgba(127,127,127,.1);
+}
+
+.__oldstatic__ .fo-grid thead tr{
+	color: #666;
+	font-weight: normal;
+	background: #fff;
+}
+
+.__oldstatic__ .fo-grid th,.fo-grid td{
+	border: 1px solid #F0F0F0;
+	text-align:center;
+	padding: 4px 4px;
+}
+
+.__oldstatic__ .fo-grid th{
+	font-weight: bold;
+	padding: 6px 4px;
+	line-height: 30px;
+}
+
+.__oldstatic__ .fo-grid .empty-tr td{
+	text-align:left;
+}
+
+.__oldstatic__ .fo-grid td{
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+.__oldstatic__ .fo-grid-simple{
+    border:0;
+}
+
+.__oldstatic__ .fo-grid-simple thead tr{
+    background-color:#12375a;
+    background-image:none;
+}
+
+.__oldstatic__ .fo-grid-simple th, .fo-grid-simple td{
+    padding: 2px;
+    border:0;
+}
+
+/* 强调为链接 */
+.__oldstatic__ .fo-link:link,.fo-link:visited,.fo-link:hover,.fo-link:active{
+	color:#357ebd;
+	font-weight: bold;
+	text-decoration: underline;
+}
+.__oldstatic__ .fo-link:hover{
+	color:#428bca;
+}

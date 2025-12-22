@@ -1,0 +1,56 @@
+@import "../common/var";
+
+$--hover-background-color: mix(#000, $--color-primary, 20%);
+
+@mixin menu {
+  .el-menu {
+    &--horizontal {
+      background: $--color-primary;
+
+      .el-menu-item {
+        color: $--color-primary-light-6;
+
+        &:hover {
+          color: $--color-primary-light-6;
+          background-color: $--hover-background-color;
+        }
+
+        &.is-disabled {
+          color: $--color-primary-light-6;
+        }
+
+        &.is-active {
+          color: $--color-white;
+          border-bottom-color: $--color-white;
+          background-color: $--color-primary;
+
+          &:hover {
+            background-color: $--hover-background-color;
+          }
+        }
+      }
+
+      & > .el-submenu {
+        .el-submenu__title {
+          color: $--color-primary-light-6;
+          border-bottom-color: transparent;
+          background: $--color-primary;
+
+          &:hover {
+            background-color: $--hover-background-color;
+          }        
+        }
+
+        &.is-active .el-submenu__title {
+          color: $--color-white;
+          border-bottom-color: $--color-white;
+          background-color: $--color-primary;
+
+          &:hover {
+            background-color: $--hover-background-color;
+          }
+        }
+      }
+    }
+  }
+}

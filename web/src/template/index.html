@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>IDC-OM</title>
+  <script>
+    window.nebulaLogTime = function (source) {
+      const win = window.parent || window;
+      const p = win.nebulaPerfObj || (win.nebulaPerfObj = {});
+      if (p[source]) {
+        console.log('repeat');
+        console.log(source);
+      }
+      p[source] = +new Date();
+    };
+window.nebulaLogTime('main-html-load-start');
+  </script>
+  <%= require('html-loader!./'+htmlWebpackPlugin.options.customTemp.header) %>
+
+  <% if(process.env.NODE_ENV === "development"){ %>
+
+  <style>
+    body {
+      display: flex;
+      padding-top: 0px;
+    }
+
+    .app-container {
+      min-width: 968px;
+      max-width: 1608px;
+      margin: 0 auto;
+    }
+
+    .__dev-side {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      background-color: #FFFFFF;
+      min-width: 248px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      z-index: 99999;
+      transition: transform .5s, opacity .5s, visibility .5s;
+    }
+    .__dev-side-hide {
+      transform: translateX(-100%);
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    .__dev-side-show-btn {
+      z-index: 99998;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      background-color: #FFFFFF;
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 28px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform .5s, opacity .5s, visibility .5s;
+    }
+    .__dev-side-show-btn-hide {
+      transform: translateX(-100%);
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    .__dev-side-a-small {
+      display: none;
+    }
+
+    .__dev-side-logo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 16px;
+      border-bottom: 1px #f0f0f0 solid;
+    }
+
+    .__dev-side-hide-btn {
+      cursor: pointer;
+    }
+
+    .__dev-side-logo-text {
+      color: #1470CC;
+      font-size: 24px;
+      line-height: 21px;
+    }
+
+    .__dev-side-nav {
+      padding-right: 16px;
+
+      height: calc(100vh - 65px);
+      overflow-y: auto;
+    }
+
+    .__dev-side-item {
+      display: block;
+      height: 32px;
+      line-height: 32px;
+      padding-left: 16px;
+    }
+
+    .__dev-side-a {
+      text-decoration: underline;
+      text-align: left;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .wrap {
+      flex: 1
+    }
+  </style>
+  
+  <% }else{%>
+
+
+  <% }%>
+</head>
+
+<body>
+<script type="systemjs-importmap">
+  {
+    "imports": {
+      "Vue":"/static/thirdparty/vue-2.6.8/vue.min.js",
+      "VueI18n":"/static/thirdparty/vue-i18n-5.0.3/vue-i18n.min.js",
+      "element-ui":"/static/thirdparty/tnwebui/index.js",
+      "ELEMENT":"/static/thirdparty/tnwebui/index.js",
+      "jQuery":"/static/thirdparty/jquery-3.2.1/jquery.min.js",
+      "echarts":"/static/thirdparty/echarts.v5.min.js",
+      "<%= htmlWebpackPlugin.options.moduleName %>":"/<%= htmlWebpackPlugin.options.moduleName %>/<%= htmlWebpackPlugin.options.moduleName %>.js"
+    }
+  }
+</script>
+  <% if(process.env.NODE_ENV === "development"){ %>
+
+  <div class="__dev-side-show-btn ">
+    <i class="tn-icon-arrow-right"></i>
+  </div>
+  <div class="__dev-side __dev-side-hide">
+    <div class="__dev-side-logo">
+      <div class="__dev-side-logo-text">
+        <a href="" class="__dev-side-a-big">TNFusion</a>
+        <a href="" class="__dev-side-a-small">TNF</a>
+      </div>
+
+      <div class="__dev-side-hide-btn">
+        <i class="tn-icon-close"></i>
+      </div>
+    </div>
+    <ul class="__dev-side-nav">
+      <% for( key in webpackConfig.entry){ %>
+      <% webName=key.split("/")[0] %>
+      <li class="__dev-side-item">
+        <a
+          class="__dev-side-a "
+          href="/<%= global._curProjName %>/<%=webName %>.html"
+        ><%=webName %></a>
+      </li>
+      <% } %>
+    </ul>
+  </div>
+  <div class="wrap">
+      <div id=__TNBL__>
+      </div>
+      <%= require('html-loader!./'+htmlWebpackPlugin.options.customTemp.footer) %>
+
+      <script>
+        document.querySelector('.__dev-side-hide-btn').onclick = function () {
+          document.querySelector('.__dev-side').classList.add('__dev-side-hide');
+          document.querySelector('.__dev-side-show-btn').classList.remove('__dev-side-show-btn-hide');
+        };
+        document.querySelector('.__dev-side-show-btn').onclick = function () {
+          document.querySelector('.__dev-side').classList.remove('__dev-side-hide');
+          document.querySelector('.__dev-side-show-btn').classList.add('__dev-side-show-btn-hide');
+        };
+      </script>
+    <!-- <div id="app"></div> -->
+  </div>
+  <% } %>
+
+
+
+
+  <!-- built files will be auto injected -->
+</body>
+
+<script>
+  window.nebulaLogTime('main-html-load-end');
+  </script>
+<script>
+//   window.System.register([], function (_export, _context) {
+//     return {
+//       execute: function () {
+//         _export('jQuery', window.jQuery)
+//       },
+//     }
+// })
+if (window.jQuery) {
+  define('jQuery', [], () => window.jQuery);
+}
+if (window.Vue) {
+  define('Vue', [], () => window.Vue);
+}
+if (window.VueI18n) {
+  define('VueI18n', [], () => window.VueI18n);
+}
+if (window.ELEMENT) {
+  define('ELEMENT', [], () => window.ELEMENT);
+  define('element-ui', [], () => window.ELEMENT);
+}
+window.System.import('<%= htmlWebpackPlugin.options.moduleName %>').then((res) => {
+  console.log('res loaded');
+  window.setTimeout(() => {
+    window.__ResetCurMenu && window.__ResetCurMenu('/<%= global._curProjName %>/<%=webName %>');
+    res.mount[0]({}, {}, {});
+    window.nebulaLogTime('main-html-load-finish');
+  }, 500);
+});
+</script>
+
+<script>
+</script>
+</html>

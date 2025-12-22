@@ -1,0 +1,24 @@
+{
+  "collect_point": {
+      "enable": true,
+      "forward_label": "tbos-test",
+      "url": "https://dcgate.tidc.tencent-cloud.com/tbox.collector-produce-forward.thttp",
+      "timeout_ms": 60000,
+      "enable_compress": false,
+      "ngate_username": "idc_andromeda_msg_forward",
+      "ngate_secretkey": "ZYeKTPMb3QEGaXb8krCH4JKCP7mZMFGi",
+      "topic": "yuxuandu-test",
+      "retry": 2
+  },
+  "std_point": {
+      "enable": true,
+      "forward_label": "tbos-prod",
+      "url": "https://dcgate.tidc.tencent-cloud.com/tbox.collector-produce-forward.thttp",
+      "timeout_ms": 60000,
+      "enable_compress": false,
+      "ngate_username": "idc_andromeda_msg_forward",
+      "ngate_secretkey": "ZYeKTPMb3QEGaXb8krCH4JKCP7mZMFGi",
+      "topic": "yuxuandu-test",
+      "retry": 2
+  }
+}

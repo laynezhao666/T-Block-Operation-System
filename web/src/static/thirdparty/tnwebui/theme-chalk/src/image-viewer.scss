@@ -1,0 +1,195 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(image-viewer) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  @include e(mask) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,.37);
+    z-index: 0;
+  }
+
+  @include e(header-indexes) {
+    font-size: 16px;
+    line-height: 40px;
+    color: #fff;
+  }
+
+  @include e(header-close) {
+    display: inline-block;
+    position: absolute;
+    top: 8px;
+    right: 24px;
+    color: #fff;
+    font-size: 0;
+    cursor: pointer;
+  }
+
+  @include e(header) {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    width: 100%;
+    height: 40px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.37);
+  }
+
+  @include e(btn) {
+    position: absolute;
+    top: 50%;
+    margin-top: -20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.24);
+    color: $--color-text-placeholder;
+    transition: color .2s;
+    cursor: pointer;
+    z-index: 1;
+
+    @include m(prev) {
+      left: 24px;
+    }
+
+    @include m(next) {
+      right: 24px;
+    }
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  @include e(image) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      cursor: grab;
+    }
+  }
+
+  @include e(footer) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    background: rgba(0, 0, 0, .37);
+    transition: height .3s;
+  }
+
+  @include e(footer-actions) {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @include e(action) {
+    color: #fff;
+    opacity: 0.6;
+    font-size: 14px;
+    line-height: 28px;
+    margin-right: 20px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: opacity .2s;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    @include m(download) {
+      a {
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+
+    @include m(thumb) {
+      margin-right: 0;
+    }
+
+    @include m(with-icon) {
+      i {
+        margin-right: 4px;
+      }
+    }
+
+    @include m(divided) {
+      padding-left: 20px;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 8px;
+        width: 1px;
+        height: 12px;
+        background-color: #D8D8D8;
+      }
+    }
+  }
+
+  @include e(footer-thumbs) {
+    margin: 0 auto;
+    height: 44px;
+    overflow: hidden;
+
+    &-list {
+      height: 34px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all .3s;
+      margin: 0;
+    }
+
+    &-item {
+      flex-shrink: 0;
+      height: 32px;
+      background: rgba(255, 255, 255, .1);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      opacity: .5;
+      cursor: pointer;
+      transition: all .2s;
+
+      width: 58px;
+      margin-right: 8px;
+
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      &--active {
+        opacity: .8;
+        border: 1px solid $--color-primary;
+      }
+    }
+  }
+}

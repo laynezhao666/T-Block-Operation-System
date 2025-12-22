@@ -1,0 +1,36 @@
+@import "common/transition.scss";
+@import "icon.scss";
+
+@font-face {
+  font-family: 'DINMittelschriftStd';
+  src: url('#{$--font-path}/DINMittelschriftLTW1G.ttf');
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+
+  &-thumb {
+    border-radius: 4px;
+    background: #d9d9d9;
+  }
+  &-corner {
+    background: transparent;
+  }
+  &-track {
+    background: transparent;
+  }
+  &-track-piece {
+    background: transparent;
+    width: 8px;
+  }
+}
+
+:root {
+  --tn-color-primary: #1470cc;
+  --tn-color-success: #3ecc46;
+  --tn-color-warning: #ff9200;
+  --tn-color-danger: #ff3e00;
+  --tn-color-info: #999;
+}

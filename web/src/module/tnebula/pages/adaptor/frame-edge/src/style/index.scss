@@ -1,0 +1,21 @@
+@import "./var";
+@import "./mixin";
+
+.default-tabs {
+  position: relative;
+  width: 95vw;
+  min-width: 1280px;
+  z-index: 20;
+  margin: 0px auto 8px;
+  @include lib-vw(margin-top, -40px);
+}
+
+.frame-edge-main-container {
+  display: flex;
+  width: 95vw;
+  margin: 0 auto;
+}
+
+.frame-edge {
+  background: #f6f8f9;
+}

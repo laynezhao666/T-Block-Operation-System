@@ -1,0 +1,37 @@
+@import './variable';
+
+@mixin title {
+  font-size: $title-font-size;
+  line-height: $title-line-height;
+}
+
+@mixin card-title {
+  font-size: $card-title-font-size;
+  line-height: $card-title-line-height;
+}
+
+@mixin center-box {
+  position: relative;
+
+  *:first-child:last-child {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@mixin clearfix {
+  $selector: &;
+
+  @at-root {
+    #{$selector}::before,
+    #{$selector}::after {
+      display: table;
+      content: "";
+    }
+    #{$selector}::after {
+      clear: both;
+    }
+  }
+}

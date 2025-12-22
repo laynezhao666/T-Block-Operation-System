@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package tbos.data.query;
+
+option go_package = "trpcprotocol/data-query";
+
+import "google/protobuf/struct.proto";
+
+// 消息发送请求体
+message QueryRequest {
+  repeated string point_list = 1;       // 需要查询的消息列表
+  int64 begin = 2;       // 起始时间
+  int64 interval = 3;
+  int64 end= 4;         // 结束时间
+  QualityType quality_type   = 5;  // 质量类型
+}
+
+// 质量类型枚举
+enum QualityType {
+  QUALITY_TYPE_NORMAL = 0;  // 正常值
+  QUALITY_TYPE_BAD    = 1;  // 异常值
+  QUALITY_TYPE_ALL    = 2;  // 所有值
+}
+
+// 测点值
+message InnerMap {
+  map<int64, double> inner_map =1;
+}
+
+// 消息返回响应体,无需定义code,msg,框架返回自动包装
+message QueryResponse {
+  map<string, InnerMap> get_point_data = 1;   // 查询到的测点数据
+  repeated string miss_point_name = 2;     // 未查询到的测点数据
+}
+/* ------------------------------ query end ------------------------------ */
+
+/* ------------------------------ change start ------------------------------ */
+// 消息发送请求体
+message ChangeRequest {
+  repeated string point_list = 1;       // 需要查询的测点列表
+  int64 begin = 2;       // 起始时间
+}
+
+// 消息返回响应体,无需定义code,msg,框架返回自动包装
+message ChangeResponse {
+  map<string, int64> changed_point_map = 1;     // 发生变化的测点数据
+}
+
+// 消息发送请求体
+message PointChangeRequest {
+  repeated string point_list = 1;       // 需要查询的测点列表
+  int64 begin = 2;       // 起始时间
+  int64 end= 3;         // 结束时间
+}
+
+// 消息返回响应体,无需定义code,msg,框架返回自动包装
+message PointChangeResponse {
+  repeated string point_list = 1;     // 发生变化的测点列表
+}
+
+/* ------------------------------ change end ------------------------------ */
+
+service Data {
+  /* ------------------------------ query start ------------------------------ */
+  //@alias=/data/query    DataQuery 数据查询接口
+  rpc DataQuery (QueryRequest) returns (QueryResponse);
+  /* ------------------------------ query end ------------------------------ */
+
+  /* ------------------------------ change start ------------------------------ */
+  //@alias=/data/change    DataChange  数据变化查询接口
+  rpc DataChange (ChangeRequest) returns (ChangeResponse);
+  //@alias=/data/pointChange    DataPointChange  变化测点查询接口
+  rpc DataPointChange (PointChangeRequest) returns (PointChangeResponse);
+  /* ------------------------------ change end ------------------------------ */
+}

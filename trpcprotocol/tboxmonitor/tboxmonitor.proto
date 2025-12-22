@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package tbos.tboxmonitor;
+
+option go_package = "trpcprotocol/tboxmonitor";
+
+service Monitor {
+  // @alias=/Monitor/Heartbeat
+  rpc Heartbeat (RequestHeartbeat) returns (ResponseHeartbeat);
+}
+
+message ResponseHeartbeat {
+  bytes data = 1;
+}
+
+message RequestHeartbeat {
+  string gid = 1;
+  int64 timestamp = 2;
+  string ip = 3;
+}

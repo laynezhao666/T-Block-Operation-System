@@ -1,0 +1,108 @@
+@import "mixins/mixins";
+@import "checkbox";
+@import "tag";
+@import "common/var";
+
+@include b(table-column) {
+  @include m(selection) {
+    .cell {
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+  }
+}
+
+@include b(table-filter) {
+  border: solid 1px $--border-color-light;
+  background-color: $--color-white;
+  box-shadow: $--dropdown-menu-box-shadow;
+  box-sizing: border-box;
+  color: $--color-text-regular;
+  margin-top: 16px;
+
+  /** used for dropdown mode */
+  @include e(list) {
+    margin: 0;
+    list-style: none;
+    min-width: 100px;
+    padding: 0;
+    overflow-y: auto;
+    max-height: 6 * 36px;
+  }
+
+  @include e(list-item) {
+    line-height: 36px;
+    padding-left: 8px;
+    cursor: pointer;
+    font-size: $--font-size-base;
+
+    &:hover {
+      background-color: $--dropdown-menuItem-hover-fill;
+      color: $--dropdown-menuItem-hover-color;
+    }
+
+    @include when(active) {
+      background-color: $--dropdown-menuItem-hover-fill;
+      color: $--color-text-primary;
+    }
+  }
+
+  @include e(top) {
+    border-bottom: 1px solid $--border-color-light;
+    padding: 6px 0 6px 8px;
+  }
+
+  @include e(content) {
+    min-width: 100px;    
+  }
+
+  @include e(bottom) {
+    border-top: 1px solid $--border-color-light;
+    padding: 0 8px;
+    line-height: 32px;
+
+    button {
+      background: transparent;
+      border: none;
+      color: $--color-text-regular;
+      cursor: pointer;
+      font-size: $--font-size-small;
+      padding: 0;
+      margin-right: 8px;
+
+      &:hover {
+        color: $--color-primary;
+      }
+
+      &:focus {
+        outline: none;
+      }
+
+      &.is-disabled {
+        color: $--disabled-color-base;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  @include e(wrap) {
+    max-height: 36 * 6px + 8px;
+  }
+
+  @include e(checkbox-group) {
+    padding: 0 8px;
+
+    label.el-checkbox {
+      display: block;
+      line-height: 36px;
+      margin-right: 0;
+    }
+  }
+
+  @include e(no-search-result) {
+    text-align: center;
+    color: $--color-text-placeholder;
+    font-size: 13px;
+    line-height: 48px;
+  }
+}

@@ -1,0 +1,13 @@
+dist
+node_modules
+thirdpart
+static
+oldstatic
+.vscode
+build
+src/feature/ht/*
+src/feature/component/zt-map/*
+ht
+*.min.js
+*.bak.js
+src/static/thirdparty/tnwebui/index.js

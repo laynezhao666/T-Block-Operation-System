@@ -1,0 +1,88 @@
+@import "mixins/mixins";
+@import "common/var";
+@import "common/transition";
+
+@include b(collapse) {
+  border-top: 1px solid $--collapse-border-color;
+  border-bottom: 1px solid $--collapse-border-color;
+}
+@include b(collapse-item) {
+  @include e(header) {
+    display: flex;
+    align-items: flex-start;
+    padding: $--collapse-header-padding 0;
+    height: $--collapse-header-height;
+    line-height: $--collapse-header-height;
+    background-color: $--collapse-header-fill;
+    color: $--collapse-header-color;
+    cursor: pointer;
+    border-bottom: 1px solid $--collapse-border-color;
+    font-size: $--collapse-header-size;
+    font-weight: 500;
+    transition: border-bottom-color .2s;
+    outline: none;
+    @include e(arrow) {
+      margin: 0 8px 0 auto;
+      transition: transform .2s;
+      color: $--color-text-secondary;
+      @include when(active) {
+        transform: rotate(90deg);
+      }
+      &--left {
+        margin: 0 12px 0 24px;
+      }
+    }
+    &.focusing:focus:not(:hover){
+      color: $--color-primary;
+    }
+    @include when(active) {
+      border-bottom-color: transparent;
+    }
+    &.has-subtitle {
+      height: auto;
+    }
+  }
+
+  @include e(tag) {
+    margin-right: 4px;
+  }
+
+  @include e(subtitle) {
+    font-size: $--collapse-content-size;
+    color: $--collapse-content-color;
+    margin-top: 8px;
+    line-height: 20px;
+    padding-right: 24px;
+  }
+
+  @include e(wrap) {
+    will-change: height;
+    background-color: $--collapse-content-fill;
+    overflow: hidden;
+    box-sizing: border-box;
+    border-bottom: 1px solid $--collapse-border-color;
+  }
+
+  @include e(content) {
+    padding-bottom: 16px;
+    font-size: $--collapse-content-size;
+    color: $--collapse-content-color;
+    line-height: 2;
+  }
+
+  &.has-left-arrow {
+    .el-collapse-item__content {
+      padding-left: 60px;
+    }
+
+    &.has-tag {
+      .el-collapse-item__content {
+        padding-left: 98px;
+      }
+    }
+  }  
+
+  &:last-child {
+    margin-bottom: -1px;
+  }
+}

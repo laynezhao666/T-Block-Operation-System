@@ -1,0 +1,17 @@
+@mixin lib-vw($prop, $value) {
+  #{$prop}: $value / (1920px * 0.01)+vw;
+}
+
+@mixin lib-vw-4($prop, $value1:0, $value2:0, $value3:0, $value4:0, ) {
+  $result1: ($value1 / (1920px * 0.01))+vw;
+  $result2: ($value2 / (1920px * 0.01))+vw;
+  $result3: ($value3 / (1920px * 0.01))+vw;
+  $result4: ($value4 / (1920px * 0.01))+vw;
+  $result: $result1 $result2 $result3 $result4;
+  #{$prop}: $result;
+}
+
+
+@mixin shadow-base {
+  box-shadow: 3px 3px 8px 2px rgba(216, 216, 216, .5);
+}

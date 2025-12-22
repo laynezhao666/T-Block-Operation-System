@@ -1,0 +1,67 @@
+etrpc:
+  service_name: cgi
+  service_port: ${PORT_CGI}
+global:
+  max_frame_size: 1048576000
+  namespace: Production
+  local_ip: ${LOCAL_IP}
+server:
+  filter:
+    - recovery
+  server: ${etrpc.service_name}
+  service:
+    - name: ${etrpc.service_name}
+      network: tcp
+      ip: 0.0.0.0
+      port: ${etrpc.service_port}
+      protocol: http
+    - name: trpc.kafka.tbos.alarmCgiSync
+      address: ${KAFKA_ADDR}?topics=${KAFKA_ALARM_PUSH_TOPIC}&group=cgi&initial=newest&batch=50&batchFlush=500
+      protocol: kafka
+    - name: ${etrpc.service_name}-ws
+      network: tcp
+      protocol: ws_tnet
+      timeout: 0
+      ip: 0.0.0.0
+      port: ${PORT_CGI_WS}
+client:
+  network: tcp
+  service:
+    - name: trpc.redis.tbos
+      target: redis://:${REDIS_PASSWORD}@${REDIS_ADDR}/0
+    - name: trpc.mysql.tbos
+      target: dsn://${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_ADDR})/${MYSQL_DATABASE}?charset=utf8mb4&parseTime=True&loc=Local
+    - callee: tbos.alarm.AlarmServer
+      name: alarm-server
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_ALARM_SERVER}
+    - callee: tbos.data.query.Data
+      name: data-query
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_DATA_QUERY}
+    - callee: tbos.data.cache.Point
+      name: data-cache
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_DATA_CACHE}
+plugins:
+  database:
+    gorm:
+      logger:
+        colorful: true
+        ignore_record_not_found_error: true
+        log_level: 3
+        max_sql_size: 256
+        slow_threshold: 3000
+  log:
+    default:
+      - caller_skip: 3
+        enable_color: true
+        formatter: console
+        level: info
+        writer: console
+
+AlarmConf:
+  alarm_name_interval: 3600
+  push_ws_interval: 10
+  ws_task_channel_size: 500
+

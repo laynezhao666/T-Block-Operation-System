@@ -1,0 +1,50 @@
+@import "./common";
+
+.text__primary {
+    color: $primary;
+  }
+  
+  .pointer {
+    cursor: pointer;
+  }
+  
+  .zero-height {
+    font-size: 0;
+  }
+  
+  .pull-right {
+    float: right;
+  }
+  
+  .middle-wrap {
+    > * {
+      vertical-align: middle !important;
+    }
+  }
+  
+  .text-light {
+    color: $text-color-light !important;
+  }
+  
+  .text-dark {
+    color: $text-color-dark !important;
+  }
+  
+  .text-primary {
+    color: $primary !important;
+  }
+  
+  .text-danger {
+    color: $text-color-danger !important;
+  }
+  
+  a.text-primary {
+    &:hover {
+      color: $primary-light-1;
+    }
+  }
+  
+  .block-shadow {
+    box-shadow: $box-shadow;
+  }
+  

@@ -1,0 +1,32 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(footerbar) {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  height: 64px;
+  box-shadow: rgba(0, 0, 0, .08) 0 -8px 30px;
+  display: flex;
+  background: #fff;
+  z-index: 99;
+  transition: width .3s;
+  
+  @include e(left) {
+    font-size: 16px;
+    padding-left: 24px;
+    display: flex;
+    align-items: center;
+  }
+
+  @include e(right) {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+
+    .el-button:not(.el-button--large):last-child {
+      margin-right: 24px;
+    }
+  }
+}

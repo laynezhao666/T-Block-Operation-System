@@ -1,0 +1,353 @@
+syntax = "proto3";
+
+package tbos.alarm;
+
+option go_package = "trpcprotocol/alarm-server";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
+// 告警策略生效Key信息 用于发送运营平台
+message MQStrategyMsgKey {
+  int32 mozu_id           = 1;
+  repeated Trace list = 2;  // 告警策略Trace
+  message Trace {
+    int32 et_type = 1;
+    int64 er      = 2;
+  }
+}
+
+// 告警策略生效Value信息 用于发送运营平台
+message MQStrategyMsgValue {
+  repeated Item list = 1;  // 告警策略生效信息 用于发送运营平台
+  message Item {
+    int32 rid           = 1;  // 策略Rid
+    string device_gid   = 2;  // 设备gid
+    int64 eval_time     = 3;  // 策略执行时间
+    int64 pv_time       = 4;  // 测点取值时，数据记录的测点时间
+    int32 error_code    = 5;  // 错误码
+    string error_detail = 6;  // 错误详情
+    bool succeed        = 7;  // 策略执行成功
+    bool fired          = 8;  // 策略告警
+  }
+}
+
+// [begin, end] 告警数量信息
+// 若要查询截至 end时间，总共的告警数量，则将begin也置为end
+message ReqAlarmCnt {
+  int64 mozu_id      = 1;  // 模组Id, 必传
+  int64 begin        = 2;  // 开始时间.
+  int64 end          = 3;  // 结束时间
+  int64 alarm_type   = 4;  // 0: 所有告警；1:活动告警（未挂起）2:活动告警（已挂起）3:历史告警
+  int64 event_status = 5;  // -1: 当前所有 1: 未转单 2: 已转单 3: 结单
+  repeated string level = 6;  // L0, L1, L2, L3, L4; 告警级别
+}
+
+message RspAlarmCnt {
+  string begin = 1;  // 开始时间
+  string end   = 2;  // 结束时间
+  int32 count  = 3;  // 告警数量
+}
+
+message ReqAlarmList {
+  int64 mozu_id                 = 1;
+  int64 alarm_id                = 2;
+  int64 rid                     = 3;
+  int64 alarm_type     = 4;   // 告警类型 1:活动告警（未挂起）2:活动告警（已挂起）3:历史告警
+  string occur_begin            = 5;  // 告警产生时间 开始
+  string occur_end              = 6;  // 告警产生时间 结束
+  repeated string level         = 7;  // L0, L1, L2, L3, L4;
+  int64 event_status            = 8;  // -1: 当前所有 1: 未转单 2: 已转单 3: 结单
+  repeated string device_gid    = 9;
+  repeated string device_number = 10;   // 设备编码
+  repeated string alarm_name    = 11;  // 告警名称
+  string content                = 12;  // 告警内容 (原因) 仅支持前缀匹配，且不支持历史告警
+  string restore_begin          = 13;  // 历史告警使用，恢复时间-开始
+  string restore_end            = 14;  // 历史告警使用，恢复时间-结束
+  int64 max_duration            = 15;  // 最大持续时间
+  int64 min_duration            = 16;  // 最小持续时间
+  int64 sort_type               = 17;  // 排序 0:default 1: 先级别后时间  2: 先时间后级别
+  bool count_by_metric          = 18;  // 是否需要按照不同的分类统计告警数量 默认false
+  int64 page                    = 19;  // 页数
+  int64 size                    = 20;  // 页大小
+}
+
+message RspAlarmList {
+  repeated Item list        = 1;
+  int64 total               = 2;   // 总告警数
+  map<string, VList> metrics = 3;  // "level", "device_type", "device", "alarm_type", "instance"
+  message Item {
+    int64 alarm_id         = 1;
+    string level           = 2;
+    string alarm_name      = 3;   // 告警类型/告警名称
+    int64 rid              = 4;
+    string device_gid      = 5;   // 设备gid
+    string device_number   = 6;   // 设备编号
+    string device_type_zh  = 7;   // 设备类型（中文）
+    string box             = 8;   // 方仓
+    string room            = 9;   // 房间
+    int64 mozu_id          = 10;  // 模组Id
+    string mozu_name       = 11;  // 模组名称
+    string alarm_content   = 12;  // 告警内容
+    int64 alarm_status     = 13;  // 0 正常 1挂起
+    int64 event_status     = 14;  // 1未转单，2已转单，3已结单
+    repeated string points = 15;  // 告警计算所用的测点列表
+    string occur_time      = 16;  // 触发时间
+    string restore_time    = 17;  // 恢复时间
+    string restore_type    = 18;  // 恢复方式
+    string hangup_reason   = 19;  // 挂起原因
+  }
+  message VList {
+    repeated VItem list = 1;
+  }
+  message VItem {
+    string name  = 1;
+    int64 count = 2;
+  }
+}
+
+// 告警类型
+message ReqAlarmName {
+  int64 alarm_type = 1;  // 0: 所有；1:活动告警（未挂起）2:活动告警（已挂起）3:历史告警
+  int64 page       = 2;  // 请求所有，则置0
+  int64 size       = 3;  // 请求所有，则置0
+}
+
+message RspAlarmName {
+  repeated string list = 1;
+  int64 total          = 2;
+}
+
+// 告警实例（rid-gid）信息
+message ReqStrategyInstance {
+  int64 mozu_id                 = 1;   // 模组Id
+  int64 rid                     = 2;   // 策略rid
+  repeated string device_gid    = 3;   // 设备gid
+  repeated string device_number = 4;   // 设备编号
+  repeated string apply_type    = 5;   // 应用类型
+  repeated string device_type   = 6;   // 设备类型-中文
+  repeated string alarm_name    = 7;   // 告警名称（类型）
+  repeated string level         = 8;   // 告警级别
+  int64 page                    = 9;   // 页数
+  int64 size                    = 10;  // 页大小
+}
+
+message RspStrategyInstance {
+  repeated Item list = 1;  // 策略Item
+  int64 total        = 2;
+  message Item {
+    int64 mozu_id               = 1;   // 模组Id
+    int64 rid                   = 2;   // 策略Id
+    string version              = 3;   // 策略版本号
+    int64 rid_type              = 4;   // 策略类型（0:实时策略 1:延时策略）
+    string apply_type           = 5;   // 应用类型
+    string alarm_name           = 6;   // 告警名称
+    string level                = 7;   // 告警级别
+    string content              = 8;   // 告警内容
+    string alarm_exp            = 9;   // 告警表达式
+    string restore_exp          = 10;  // 恢复表达式
+    string expression_map       = 11;  // 表达式变量映射
+    string owner                = 12;  // 负责人
+    string create_at            = 13;  // 创建时间
+    string update_at            = 14;  // 更新时间
+    string device_number        = 15;  // 设备编号
+    string device_gid           = 16;  // 设备gid
+    string device_type          = 17;  // 设备类型
+    repeated string points      = 18;  // 告警实例关联的测点列表
+    string alarm_exp_std        = 19;  // 标准测点 告警表达式
+    string restore_exp_std      = 20;  // 标准测点 恢复表达式
+  }
+}
+
+message ReqStrategyList {
+  int64 mozu_id                 = 1;   // 模组Id
+  int64 rid                     = 2;   // 策略rid
+  repeated string device_gid    = 3;   // 设备gid
+  repeated string device_number = 4;   // 设备编号
+  repeated string apply_type    = 5;   // 应用类型
+  repeated string device_type   = 6;   // 设备类型
+  repeated string alarm_name    = 7;   // 告警名称（类型）
+  repeated string level         = 8;   // 告警级别
+  int64 page                    = 9;   // 页数
+  int64 size                    = 10;  // 页大小
+}
+
+message RspStrategyList {
+  repeated Item list = 1;  // 策略Item
+  int64 total        = 2;
+  message Item {
+    int64 rid                   = 1;
+    string apply_type           = 2;   // 应用类型
+    string device_type          = 3;   // 设备类型
+    string alarm_name           = 4;   // 告警名称
+    string level                = 5;
+    string content              = 6;   // 告警内容
+    bool standard               = 7;
+    string alarm_exp            = 8;   // 告警表达式
+    string restore_exp          = 9;   // 恢复表达式
+    string owner                = 10;  // 负责人
+    string create_at            = 11;  // 创建时间
+    string update_at            = 12;  // 更新时间
+    repeated string device_list = 13;  // 设备编号列表
+    repeated string gid_list    = 14;  // gid列表
+  }
+}
+
+message ReqValidateList {
+  int64 mozu_id                 = 1;
+  int64 valid_type              = 2;   // 0: 无效策略 1: 产生告警策略 2: 未产生告警策略
+  string begin                  = 3;   // 最后判断时间
+  string end                    = 4;   // 最后判断时间
+  int64 rule_type               = 5;   // 策略类型 0: 标准策略 1: 自定义策略
+  repeated string level         = 6;   // 告警等级
+  repeated string device_gid    = 7;   // 设备gid列表
+  repeated string device_number = 8;   // 设备编号列表
+  repeated string alarm_name    = 9;   // 告警类型
+  repeated string error_name    = 10;  // 无效原因
+  int64 page                    = 11;  // 页数
+  int64 size                    = 12;  // 页大小
+}
+
+message RspValidateList {
+  map<string, double> metrics                   = 1;
+  repeated Item list                            = 2;
+  int64 total                                   = 3;
+  map<string, google.protobuf.Struct> metric_map = 4;  // 逐告警级别统计策略生效信息
+  message Item {
+    int64 rid                   = 1;   // 策略编号
+    string device_gid           = 2;   // 设备gid
+    string device_number        = 3;   // 设备编号
+    string level                = 4;   // 告警级别
+    string alarm_name           = 5;   // 告警名称（类型）
+    string content              = 6;   // 告警内容
+    string alarm_exp            = 7;   // 告警表达式
+    string restore_exp          = 8;   // 恢复表达式
+    repeated string points      = 9;   // 告警计算所用的测点列表
+    bool standard               = 10;  // 是否标准策略
+    string eval_time            = 11;  // 最后判断时间
+    bool succeed                = 12;  // 是否成功执行
+    bool fired                  = 13;  // 是否告警
+    int64 error_code            = 14;  // 错误码
+    string error_name           = 15;  // 无效原因
+    string error_detail         = 16;  // 无效详情
+  }
+}
+
+message ReqUpdateAlarmStatus {  // 更新告警状态 挂起/未挂起 转单/未转单 关闭告警
+  int64 mozu_id                = 1;  // 模组ID
+  repeated int64 alarm_ids     = 2;  // 告警ID列表
+  uint64 user_id               = 3;  // 操作userID
+  OpType op_type               = 4;  // 操作类型 0:挂起/解除挂起 1: 转单/结单 2：关闭告警
+  int64 alarm_status           = 5;  // 告警挂起状态 挂起/解除 挂起
+  int64 event_status           = 6;  // 告警转单状态 未转单 已转单 结单
+  string hangup_reason         = 7;  // 挂起原因
+  string close_reason          = 8;  // 关闭原因
+  string update_time           = 9;  // 更新时间
+  enum OpType {
+    HANGOP  = 0;  // 挂起操作类型
+    EVENTOP = 1;  // 转单/建单操作类型
+    CLOSEOP = 2;  // 关闭告警操作类型
+  }
+}
+
+// 查询虚拟测点信息
+message ReqGetVirtualPoint {
+  int64 mozu_id              = 1;  // 模组Id
+  repeated string device_gid = 2;  // 设备gid
+  repeated string point_id   = 3;  // 测点名称，此处名称不包含gid，仅为pointName
+}
+
+message RspGetVirtualPoint {
+  repeated Item list = 1;
+  message Item {
+    int64 mozu_id         = 1;    // 模组Id
+    string point_name     = 2;    // 虚拟测点名称 形式：gid.PointName
+    int64 compute_cost    = 3;    // 该测点的计算复杂度
+    string expression     = 4;    // 该虚拟测点的计算表达式
+    string expression_map = 5;    // 变量映射map
+    string create_at      = 6;    // 创建时间
+    string update_at      = 7;    // 更新时间
+  }
+}
+
+// 删除历史告警接口，防止告警数太多
+message ReqDelHistoryAlarm {
+  string token               = 1;  // token信息，用于防止误删
+  int64 mozu_id              = 2;
+  int64 end_time             = 3;  // 删除截止至end_time的历史告警, unix时间戳
+  repeated int64 rid         = 4;  // 策略id
+  repeated string device_gid = 5;  // gid
+  repeated string level      = 6;  // 告警级别
+}
+
+// 告警回放请求体
+message ReqAlarmDiagnose {
+  int64 mozu_id                 = 1;  // 模组Id
+  int64 rid                     = 2;  // 策略Id
+  repeated string device_gid    = 3;  // 设备gid列表
+  repeated string device_number = 4;  // 设备number列表
+  int64 start_time              = 5;  // 回放开始时间
+  int64 end_time                = 6;  // 回放结束时间
+  map<string, PointValue>   pv  = 7;  // 附带测点取值 pv:{"point_id": {"tv": {"time_unix": value}}}
+  message PointValue {
+    map<int64, double> tv = 1;  // map[time] value
+  }
+}
+
+message RspAlarmDiagnose {
+  int64 mozu_id      = 1;  // 模组Id
+  int64 rid          = 2;  // 策略Rid
+  repeated Item list = 3;
+  message Item {
+    string device_gid           = 1;  // 设备gid
+    string device_number        = 2;  // 设备编号
+    string express_std          = 3;  // 标准表达式
+    string express_str          = 4;  // 中文业务表达式
+    repeated StepResult cal_res = 5;  // 计算结果
+    message StepResult {
+      string timestamp = 1;  // 计算时间点
+      bool success     = 2;  // 计算成功/失败
+      bool fired       = 3;  // 告警/未告警
+    }
+  }
+}
+
+// 查询过去24小时内，所有产生的告警数量
+message ReqAlarmCntTrend {
+  int64 mozu_id      = 1;  // 模组Id
+}
+
+message RspAlarmCntTrend {
+  repeated AlarmCount list = 1;
+  message AlarmCount {
+    string u_time  = 1;   // 时间戳
+    int64 count    = 2;  // 告警数量
+  }
+}
+
+service AlarmServer {
+  // @alias=/alarm/server/GetAlarmCnt           告警数量信息
+  rpc GetAlarmCnt (ReqAlarmCnt)                 returns (RspAlarmCnt);
+  // @alias=/alarm/server/GetAlarmCntTrend      过去24小时内告警数量信息
+  rpc GetAlarmCntTrend (ReqAlarmCntTrend)       returns (RspAlarmCntTrend);
+  // @alias=/alarm/server/GetAlarmList          告警列表
+  rpc GetAlarmList (ReqAlarmList)               returns (RspAlarmList);
+  // @alias=/alarm/server/GetAlarmName          告警名称
+  rpc GetAlarmName (ReqAlarmName)               returns (RspAlarmName);
+  // @alias=/alarm/server/GetStrategy           告警策略
+  rpc GetStrategy (ReqStrategyList)             returns (RspStrategyList);
+  // @alias=/alarm/server/GetStrategyInstance   告警策略实例
+  rpc GetStrategyInstance (ReqStrategyInstance) returns (RspStrategyInstance);
+  // @alias=/alarm/server/GetValidate           策略生效信息
+  rpc GetValidate (ReqValidateList)             returns (RspValidateList);
+  // @alias=/alarm/server/UpdateAlarmStatus     解除挂起告警
+  rpc UpdateAlarmStatus(ReqUpdateAlarmStatus)   returns (google.protobuf.Empty);
+  // @alias=/alarm/server/GetVirtualPoint       读取虚拟测点信息
+  rpc GetVirtualPoint (ReqGetVirtualPoint)      returns (RspGetVirtualPoint);
+  // @alias=/alarm/server/DelHistoryAlarm       删除历史告警
+  rpc DelHistoryAlarm (ReqDelHistoryAlarm)      returns (google.protobuf.Empty);
+  // @alias=/alarm/server/AlarmDiagnose       告警回放
+  rpc AlarmDiagnose(ReqAlarmDiagnose) returns (RspAlarmDiagnose);
+}
+
+

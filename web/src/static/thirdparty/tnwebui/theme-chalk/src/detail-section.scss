@@ -1,0 +1,17 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(detail-section) {
+  .el-form-item {
+    &__label,
+    &__content {
+      line-height: 40px;
+    }
+
+    &__content  > span {
+      display: inline-block;
+      line-height: 22px;
+      margin: 9px 0;
+    }
+  }
+}

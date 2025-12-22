@@ -1,0 +1,45 @@
+@import "./_mixin";
+
+@font-face {
+  font-family: "DINAlternate-Bold";
+  src: url("~@/static/fonts/DINAlternateBold.ttf");
+}
+
+@font-face {
+  font-family: "TencentSansW7";
+  src: url("~@/static/fonts/TencentSans-W7.ttf");
+}
+
+.max-center {
+  max-width: 1392px;
+  min-width: 976px;
+  margin: 0 auto;
+}
+
+.tc-w7 {
+  font-family: "tc-w7";
+}
+
+.DIN {
+  font-family: "DINAlternate-Bold";
+}
+
+.num-base {
+  font-family: "DINAlternate-Bold";
+}
+
+.num-title {
+  font-size: 14px;
+  @include lib-vw(font-size, 14px);
+  color: #666;
+}
+
+.unit-12 {
+  font-size: 12px;
+  @include lib-vw(font-size, 12px);
+  color: #999;
+}
+
+.shadow-base {
+  box-shadow: 3px 3px 8px 2px rgba(216, 216, 216, 0.5);
+}

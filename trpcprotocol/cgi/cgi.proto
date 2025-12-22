@@ -1,0 +1,767 @@
+syntax = "proto3";
+
+package tbos.cgi;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "trpcprotocol/cgi";
+
+// [begin, end] 告警数量信息
+// 若要查询截至 end时间，总共的告警数量，则将begin也置为end
+message ReqAlarmCnt {
+  int32 mozu_id         = 1;  // 模组Id, 必传
+  int32 begin           = 2;  // 开始时间. 秒级时间戳
+  int32 end             = 3;  // 结束时间 秒级时间戳
+  int32 alarm_type      = 4;  // 0: 所有告警；1:活动告警（未挂起）2:活动告警（已挂起）3:历史告警
+  int32 event_status    = 5;  // -1: 当前所有 1: 未转单 2: 已转单 3: 结单
+  repeated string level = 6;  // L0, L1, L2, L3, L4; 告警级别
+}
+
+message RspAlarmCnt {
+  string begin = 1;  // 开始时间
+  string end   = 2;  // 结束时间
+  int32 count  = 3;  // 告警数量
+}
+
+// 告警详情 -> 活动告警 / 历史告警
+message ReqAlarmDetail {
+  int32 mozu_id                 = 1;
+  int64 alarm_id                = 2;
+}
+
+message AlarmDetailItem {
+  int64 alarm_id         = 1;
+  string level           = 2;
+  string alarm_name      = 3;  // 告警类型/告警名称
+  int32 rid              = 4;
+  string device_gid      = 5;   // 设备gid
+  string device_number   = 6;   // 设备编号
+  string device_type_zh  = 7;   // 设备类型（中文） 告警源: device_type_zh【device_number】
+  string device_name     = 20;  // 设备名称
+  string alarm_exp       = 21;  // 告警表达式
+  string restore_exp     = 22;  // 恢复表达式
+  string box             = 8;   // 方仓  定位 ： box/room
+  string room            = 9;   // 房间
+  int32 mozu_id          = 10;  // 模组Id
+  string mozu_name       = 11;  // 模组名称
+  string alarm_content   = 12;  // 告警内容
+  int32 alarm_status     = 13;  // 0 正常 1挂起
+  int32 event_status     = 14;  // 1未转单，2已转单，3已结单
+  repeated string points = 15;  // 告警计算所用的测点列表
+  string occur_time      = 16;  // 触发时间
+  string restore_time    = 17;  // 恢复时间
+  string restore_type    = 18;  // 恢复方式
+  string hangup_reason   = 19;  // 挂起原因
+}
+
+message ReqAlarmList {
+  int32 mozu_id                 = 1;
+  int64 alarm_id                = 2;
+  int32 rid                     = 3;
+  int32 alarm_type              = 4;  // 告警类型 1:活动告警（未挂起）2:活动告警（已挂起）3:历史告警
+  string occur_begin            = 5;  // 告警产生时间 开始
+  string occur_end              = 6;  // 告警产生时间 结束
+  repeated string level         = 7;  // L0, L1, L2, L3, L4;
+  int32 event_status            = 8;  // -1: 当前所有 1: 未转单 2: 已转单 3: 结单
+  repeated string device_gid    = 9;
+  repeated string device_number = 10;  // 设备编码
+  repeated string alarm_name    = 11;  // 告警名称
+  string content                = 12;  // 告警内容 (原因) 仅支持前缀匹配，且不支持历史告警
+  string restore_begin          = 13;  // 历史告警使用，恢复时间-开始
+  string restore_end            = 14;  // 历史告警使用，恢复时间-结束
+  int32 max_duration            = 15;  // 最大持续时间
+  int32 min_duration            = 16;  // 最小持续时间
+  int32 sort_type               = 17;  // 排序 0:default 1: 先级别后时间  2: 先时间后级别
+  bool count_by_metric          = 18;  // 是否需要按照不同的分类统计告警数量 默认false
+  int32 page                    = 19;  // 页数
+  int32 size                    = 20;  // 页大小
+}
+
+message RspAlarmList {
+  repeated Item list         = 1;
+  int32 total                = 2;  // 总告警数
+  map<string, VList> metrics = 3;  // "level", "device_type", "device", "alarm_type", "instance"
+  message Item {
+    int64 alarm_id         = 1;
+    string level           = 2;
+    string alarm_name      = 3;  // 告警类型/告警名称
+    int32 rid              = 4;
+    string device_gid      = 5;   // 设备gid
+    string device_number   = 6;   // 设备编号
+    string device_type_zh  = 7;   // 设备类型（中文） 告警源: device_type_zh【device_number】
+    string box             = 8;   // 方仓  定位 ： box/room
+    string room            = 9;   // 房间
+    int32 mozu_id          = 10;  // 模组Id
+    string mozu_name       = 11;  // 模组名称
+    string alarm_content   = 12;  // 告警内容
+    int32 alarm_status     = 13;  // 0 正常 1挂起
+    int32 event_status     = 14;  // 1未转单，2已转单，3已结单
+    repeated string points = 15;  // 告警计算所用的测点列表
+    string occur_time      = 16;  // 触发时间
+    string restore_time    = 17;  // 恢复时间
+    string restore_type    = 18;  // 恢复方式
+    string hangup_reason   = 19;  // 挂起原因
+  }
+  message VList {
+    repeated VItem list = 1;
+  }
+  message VItem {
+    string name = 1;
+    int32 count = 2;
+  }
+}
+
+// 告警类型
+message ReqAlarmName {
+  int32 alarm_type = 1;  // 0: 所有；1:活动告警（未挂起）2:活动告警（已挂起）3:历史告警
+  int32 page       = 2;  // 请求所有，则置0
+  int32 size       = 3;  // 请求所有，则置0
+}
+
+message RspAlarmName {
+  repeated string list = 1;
+  int32 total          = 2;
+}
+
+message ReqStrategyList {
+  int32 mozu_id                 = 1;   // 模组Id
+  int32 rid                     = 2;   // 策略rid
+  repeated string device_gid    = 3;   // 设备gid
+  repeated string device_number = 4;   // 设备编号
+  repeated string apply_type    = 5;   // 应用类型
+  repeated string device_type   = 6;   // 设备类型
+  repeated string alarm_name    = 7;   // 告警名称（类型）
+  repeated string level         = 8;   // 告警级别
+  int32 page                    = 9;   // 页数
+  int32 size                    = 10;  // 页大小
+}
+
+message RspStrategyList {
+  repeated Item list = 1;
+  int32 total        = 2;
+  message Item {
+    int32 rid                   = 1;
+    string apply_type           = 2;  // 应用类型
+    string device_type          = 3;  // 设备类型
+    string alarm_name           = 4;  // 告警名称
+    string level                = 5;
+    string content              = 6;  // 告警内容
+    bool standard               = 7;
+    string alarm_exp            = 8;   // 告警表达式
+    string restore_exp          = 9;   // 恢复表达式
+    string owner                = 10;  // 负责人
+    string create_at            = 11;  // 创建时间
+    string update_at            = 12;  // 更新时间
+    repeated string device_list = 13;  // 设备编号列表
+    repeated string gid_list    = 14;  // gid列表
+  }
+}
+
+// 告警实例（rid-gid）信息
+message ReqStrategyInstance {
+  int32 mozu_id                 = 1;   // 模组Id
+  int32 rid                     = 2;   // 策略rid
+  repeated string device_gid    = 3;   // 设备gid
+  repeated string device_number = 4;   // 设备编号
+  repeated string apply_type    = 5;   // 应用类型
+  repeated string device_type   = 6;   // 设备类型-中文
+  repeated string alarm_name    = 7;   // 告警名称（类型）
+  repeated string level         = 8;   // 告警级别
+  int32 page                    = 9;   // 页数
+  int32 size                    = 10;  // 页大小
+}
+
+message RspStrategyInstance {
+  repeated Item list = 1;  // 策略Item
+  int32 total        = 2;
+  message Item {
+    int32 mozu_id          = 1;   // 模组Id
+    int32 rid              = 2;   // 策略Id
+    string version         = 3;   // 策略版本号
+    int32 rid_type         = 4;   // 策略类型（0:实时策略 1:延时策略）
+    string apply_type      = 5;   // 应用类型
+    string alarm_name      = 6;   // 告警名称
+    string level           = 7;   // 告警级别
+    string content         = 8;   // 告警内容
+    string alarm_exp       = 9;   // 告警表达式
+    string restore_exp     = 10;  // 恢复表达式
+    string expression_map  = 11;  // 表达式变量映射
+    string owner           = 12;  // 负责人
+    string create_at       = 13;  // 创建时间
+    string update_at       = 14;  // 更新时间
+    string device_number   = 15;  // 设备编号
+    string device_gid      = 16;  // 设备gid
+    string device_type     = 17;  // 设备类型
+    repeated string points = 18;  // 告警实例关联的测点列表
+  }
+}
+
+message ReqValidateList {
+  int32 mozu_id                 = 1;
+  int32 valid_type              = 2;   // 0: 无效策略 1: 产生告警策略 2: 未产生告警策略
+  string begin                  = 3;   // 最后判断时间
+  string end                    = 4;   // 最后判断时间
+  int32 rule_type               = 5;   // 策略类型 0: 标准策略 1: 自定义策略
+  repeated string level         = 6;   // 告警等级
+  repeated string device_gid    = 7;   // 设备gid列表
+  repeated string device_number = 8;   // 设备编号列表
+  repeated string alarm_name    = 9;   // 告警类型
+  repeated string error_name    = 10;  // 无效原因
+  int32 page                    = 11;  // 页数
+  int32 size                    = 12;  // 页大小
+}
+
+message RspValidateList {
+  map<string, double> metrics                    = 1;  // all:总数 valid:有效 invalid:无效数 efficiency:生效率
+  repeated Item list                             = 2;
+  int32 total                                    = 3;
+  map<string, google.protobuf.Struct> metric_map = 4;  // 逐告警级别统计策略生效信息
+  message Item {
+    int32 rid              = 1;   // 策略编号
+    string device_gid      = 2;   // 设备gid
+    string device_number   = 3;   // 设备编号
+    string level           = 4;   // 告警级别
+    string alarm_name      = 5;   // 告警名称（类型）
+    string content         = 6;   // 告警内容
+    string alarm_exp       = 7;   // 告警表达式
+    string restore_exp     = 8;   // 恢复表达式
+    repeated string points = 9;   // 告警计算所用的测点列表
+    bool standard          = 10;  // 是否标准策略
+    string eval_time       = 11;  // 最后判断时间
+    bool succeed           = 12;  // 是否成功执行
+    bool fired             = 13;  // 是否告警
+    int32 error_code       = 14;  // 错误码
+    string error_name      = 15;  // 无效原因
+    string error_detail    = 16;  // 无效详情
+  }
+}
+
+// 查询虚拟测点信息
+message ReqGetVirtualPoint {
+  int32 mozu_id              = 1;  // 模组Id
+  repeated string device_gid = 2;  // 设备gid
+  repeated string point_id   = 3;  // 测点名称，此处名称不包含gid，仅为pointName
+}
+
+message RspGetVirtualPoint {
+  repeated Item list = 1;
+  message Item {
+    int32 mozu_id         = 1;  // 模组Id
+    string point_name     = 2;  // 虚拟测点名称 形式：gid.PointName
+    int32 compute_cost    = 3;  // 该测点的计算复杂度
+    string expression     = 4;  // 该虚拟测点的计算表达式
+    string expression_map = 5;  // 变量映射map
+    string create_at      = 6;  // 创建时间
+    string update_at      = 7;  // 更新时间
+  }
+}
+
+// 查询过去24小时内，所有产生的告警数量
+message ReqAlarmCntTrend {
+  int64 mozu_id = 1;  // 模组Id
+}
+
+message RspAlarmCntTrend {
+  repeated AlarmCount list = 1;
+  message AlarmCount {
+    string u_time = 1;  // 时间戳
+    int64 count   = 2;  // 告警数量
+  }
+}
+
+// 告警查询相关接口
+service Alarm {
+  // @alias=/alarm/server/GetAlarmCnt    告警数量信息
+  rpc GetAlarmCnt(ReqAlarmCnt) returns (RspAlarmCnt);
+  // @alias=/alarm/server/GetAlarmCntTrend      过去24小时内告警数量信息
+  rpc GetAlarmCntTrend(ReqAlarmCntTrend) returns (RspAlarmCntTrend);
+  // @alias=/alarm/server/GetAlarmDetail   告警详情
+  rpc GetAlarmDetail(ReqAlarmDetail) returns (AlarmDetailItem);
+  // @alias=/alarm/server/GetAlarmList   告警列表
+  rpc GetAlarmList(ReqAlarmList) returns (RspAlarmList);
+  // @alias=/alarm/server/GetAlarmName   告警名称
+  rpc GetAlarmName(ReqAlarmName) returns (RspAlarmName);
+  // @alias=/alarm/server/GetStrategy   告警策略
+  rpc GetStrategy(ReqStrategyList) returns (RspStrategyList);
+  // @alias=/alarm/server/GetStrategyInstance   告警策略实例
+  rpc GetStrategyInstance(ReqStrategyInstance) returns (RspStrategyInstance);
+  // @alias=/alarm/server/GetValidate   策略生效信息
+  rpc GetValidate(ReqValidateList) returns (RspValidateList);
+  // @alias=/alarm/server/GetVirtualPoint       读取虚拟测点信息
+  rpc GetVirtualPoint(ReqGetVirtualPoint) returns (RspGetVirtualPoint);
+}
+
+/*--------------------------------------------------------------------------*/
+
+// 获取设备实体列表-请求参数
+message ReqGetDeviceEntity {
+  repeated string device_gid           = 1;   // 设备GID
+  repeated string device_number        = 2;   // 设备编码
+  int32 mozu_id                        = 3;   // 所属模组ID
+  repeated string parent_device_number = 5;   // 父级设备编码
+  repeated string device_type_en       = 7;   // 设备种类英文
+  repeated string device_type_zh       = 8;   // 设备种类中文
+  repeated string application_type_en  = 9;   // 应用类型英文
+  repeated string application_type_zh  = 10;  // 应用类型中文
+  int32 page                           = 12;  // 开始页
+  int32 size                           = 13;  // 页大小
+}
+
+// 设备实体对象
+message DeviceEntityObject {
+  int64 id                          = 1;   // 主键ID
+  string device_gid                 = 2;   // 设备GID
+  string device_number              = 3;   // 设备编码
+  string device_number_show         = 4;   // 展示编码
+  string device_no                  = 5;   // 设备编号,同层同类型设备序号
+  string device_name                = 6;   // 设备名称
+  int32 mozu_id                     = 7;   // 所属模组ID
+  string mozu_name                  = 8;   // 模组名称
+  string idc_area                   = 9;   // 机房区域
+  string func_room                  = 10;  // 方仓/功能间
+  string parent_device_number       = 11;  // 父级设备编码
+  int32 enable_status               = 12;  // 可用状态
+  string device_type_en             = 13;  // 设备种类英文
+  string device_type_zh             = 14;  // 设备种类中文
+  string application_type_en        = 15;  // 应用类型英文
+  string application_type_zh        = 16;  // 应用类型中文
+  string belong_application_type_en = 17;  // 所属应用类型
+  string create_at                  = 18;  // 记录创建时间
+  string update_at                  = 19;  // 记录上次更新时间
+  string device_number_route        = 20;  // 设备编号路由
+}
+
+// 获取设备实体列表-响应参数
+message RspGetDeviceEntity {
+  repeated DeviceEntityObject list = 1;  // 设备列表
+  int32 total                      = 2;  // 总共数量
+}
+
+// 获取设备树请求体
+message ReqGetDeviceTree {
+  int32 mozu_id      = 1;  // 模组ID
+  TreeType tree_type = 2;  // 树类型
+
+  // 树类型枚举
+  enum TreeType {
+    POSITION    = 0;  // 按位置
+    DEVICE_TYPE = 1;  // 按设备类型
+  }
+}
+
+// 获取设备树响应体
+message RspGetDeviceTree {
+  repeated TreeNode list = 1;  // 树根节点列表
+
+  // 树节点
+  message TreeNode {
+    string device_gid                 = 1;   // 设备GID
+    string device_number              = 2;   // 设备编码
+    string device_number_show         = 3;   // 展示编码
+    string device_no                  = 4;   // 设备编号,同层同类型设备序号
+    string device_name                = 5;   // 设备名称
+    int32 enable_status               = 6;   // 可用状态
+    string device_type_en             = 7;   // 设备种类英文
+    string device_type_zh             = 8;   // 设备种类中文
+    string application_type_en        = 9;   // 应用类型英文
+    string application_type_zh        = 10;  // 应用类型中文
+    string belong_application_type_en = 11;  // 应用类型中文
+    repeated TreeNode children        = 12;  // 子设备列表
+    int32 device_count                = 13;  // 子设备数量
+  }
+}
+
+// 获取设备子树-请求参数
+message ReqGetSubTree {
+  int32 mozu_id        = 1;  // 模组ID
+  string device_gid    = 2;  // 设备GID
+  string device_number = 3;  // 设备编码
+}
+
+// 获取设备子树-响应参数
+message RspGetSubTree {
+  TreeNode root = 1;  // 根节点
+
+  // 树节点
+  message TreeNode {
+    string device_gid                 = 1;   // 设备GID
+    string device_number              = 2;   // 设备编码
+    string device_number_show         = 3;   // 展示编码
+    string device_no                  = 4;   // 设备编号,同层同类型设备序号
+    string device_name                = 5;   // 设备名称
+    int32 enable_status               = 6;   // 可用状态
+    string device_type_en             = 7;   // 设备种类英文
+    string device_type_zh             = 8;   // 设备种类中文
+    string application_type_en        = 9;   // 应用类型英文
+    string application_type_zh        = 10;  // 应用类型中文
+    string belong_application_type_en = 11;  // 应用类型中文
+    repeated TreeNode children        = 12;  // 子设备列表
+  }
+}
+
+// 获取测点信息-请求参数
+message ReqGetDevicePoint {
+  repeated string device_gid          = 1;   // 设备GID
+  repeated string device_number       = 2;   // 设备编码
+  repeated string device_type_en      = 3;   // 设备类型英文
+  repeated string device_type_zh      = 4;   // 设备类型中文
+  repeated string application_type_en = 5;   // 应用类型英文
+  repeated string application_type_zh = 6;   // 应用类型中文
+  repeated string point_name_en       = 7;   // 测点名称英文
+  repeated string point_name_zh       = 8;   // 测点名称中文
+  repeated string point_key           = 9;   // 测点唯一标识
+  repeated int32 point_type           = 10;  // 测点类型
+  repeated string point_rw            = 11;  // 测点读写分类
+  int32 mozu_id                       = 12;  // 所属模组ID
+  repeated string point_level         = 13;  // 测点级别
+  repeated string value_type          = 14;  // 测点值类型
+  repeated string value_unit          = 15;  // 测点值单位
+  int32 page                          = 16;  // 页数
+  int32 size                          = 17;  // 页大小
+}
+
+// 设备测点对象
+message DevicePointObject {
+  string device_gid        = 2;   // 设备GID
+  string device_number     = 3;   // 设备编码
+  string belong_collector  = 4;   // 归属采集器
+  string point_name_en     = 5;   // 测点名称英文
+  string point_name_zh     = 6;   // 测点名称中文
+  string point_key         = 7;   // 测点标识
+  int32 point_type         = 8;   // 测点类型
+  string point_feature     = 9;   // 测点特征
+  string point_group       = 10;  // 测点分组
+  string point_rw          = 11;  // 测点读写分类
+  string point_level       = 12;  // 测点级别
+  int32 point_standard     = 13;  // 是否标准测点
+  string expression        = 14;  // 测点表达式
+  string expression_map    = 15;  // 测点映射(设备GID)
+  string expression_map_zh = 25;  // 测点映射(设备编号)
+  string value_type        = 16;  // 测点值类型
+  string value_valid_range = 17;  // 测点值有效范围
+  string value_unit        = 18;  // 测点值单位
+  string value_precision   = 19;  // 测点值精度
+  string value_enum        = 20;  // 值枚举映射
+  int32 mozu_id            = 21;  // 所属模组ID
+}
+
+// 获取测点信息-响应参数
+message RspGetDevicePoint {
+  repeated DevicePointObject list = 1;  // 设备测点列表
+  int32 total                     = 2;  // 总共记录数
+}
+
+message ReqGetSubTreeFieldDic {
+  string device_gid    = 1;  // 设备GID
+  string device_number = 2;  // 设备编码
+  int32 mozu_id        = 3;  // 所属模组ID
+  string filed_type    = 4;  // 获取的字段名称
+}
+
+// 获取模组列表-请求参数
+message ReqGetMozuInfo {
+  repeated int32 mozu_id    = 1;  // 模组ID
+  repeated string mozu_name = 2;  // 模组名称
+  repeated string mozu_code = 3;  // 模组编码
+}
+
+// 获取模组列表-响应参数
+message RspGetMozuInfo {
+  repeated MozuInfo list = 1;  // 模组信息列表
+  int32 total            = 2;  // 总共记录数
+
+  // 模组详细信息
+  message MozuInfo {
+    int32 mozu_id             = 1;  // 模组ID
+    string mozu_name          = 2;  // 模组名称
+    string mozu_code          = 3;  // 模组编码
+    int32 mozu_type           = 4;  // 模组类型
+    string belong_building    = 5;  // 所属楼栋
+    string belong_campus      = 6;  // 所属园区
+    string belong_campus_code = 7;  // 所属园区编码
+    string publish_version    = 8;  // 下发版本
+    string alarm_version      = 9;  // 告警版本
+  }
+}
+
+// 获取采集设备状态树-请求参数
+message ReqGetCollectorStatusTree {
+  int32 mozu_id        = 1;  // 模组ID
+  int32 collector_type = 2;  // 采集器类型,0:全部,1:自研,3:三方厂商
+}
+
+// 获取采集设备状态树-响应参数
+message RspGetCollectorStatusTree {
+  string device_gid                           = 1;   // 设备Gid
+  string device_number                        = 2;   // 设备编号
+  string device_code                          = 3;   // 设备代号
+  string device_name                          = 4;   // 设备名称
+  string device_type_en                       = 5;   // 设备类型英文
+  string device_type_zh                       = 6;   // 设备类型中文
+  int32 collector_type                        = 7;   // 采集器类型
+  string channel_type                         = 8;   // 连接类型
+  string channel_id                           = 9;   // 连接ID
+  int32 has_been_collected                    = 10;  // 是否采集
+  string comm_state_id                        = 11;  // 采集状态测点标识
+  int64 collected_time                        = 14;  // 采集时间
+  int32 device_count                          = 15;  // 子设备数量
+  repeated RspGetCollectorStatusTree children = 16;  // 子设备
+}
+
+// 获取采集设备信息-请求参数
+message ReqGetCollectorInfo {
+  int32 mozu_id     = 1;  // 模组ID
+  string device_gid = 2;  // 设备Gid
+}
+
+// 获取采集设备信息-响应参数
+message RspGetCollectorInfo {
+  string device_gid                    = 1;   // 设备GID
+  string device_number                 = 2;   // 设备编码
+  string device_code                   = 3;   // 设备代号
+  string device_name                   = 4;   // 设备名称
+  string device_type_en                = 5;   // 采集设备类型英文
+  string device_type_zh                = 6;   // 采集设备类型中文
+  string channel_type                  = 7;   // 通道类型
+  string channel_id                    = 8;   // 通道地址
+  google.protobuf.Struct channel_link  = 9;   // 通道详细信息
+  string profile                       = 10;  // 模版详细配置
+  string template_name                 = 11;  // 模版名称
+  google.protobuf.Struct template_info = 12;  // 模版信息
+  string status_id                     = 13;  // 状态测点标识
+  google.protobuf.Struct state         = 14;  // 状态信息
+  repeated RspGetCollectorInfo devices = 15;  // 子设备列表
+}
+
+// 获取采集点列表-请求参数
+message ReqGetCollectorPoint {
+  int32 mozu_id     = 1;  // 模组ID
+  string device_gid = 2;  // 设备Gid
+}
+
+// 获取采集点列表-请求参数
+message RspGetCollectorPoint {
+  repeated CollectorPoint points = 2;  // 采集点列表
+
+  // 采集测点
+  message CollectorPoint {
+    string point_key                  = 1;   // 采集点标识
+    string point_name_en              = 2;   // 采集点英文名称
+    string point_name_zh              = 3;   // 采集点中文名称
+    string point_type                 = 4;   // 采集点类型
+    string point_rw                   = 5;   // 采集点读写分类
+    string point_standard             = 6;   // 采集点是否标准测点
+    google.protobuf.Struct delta_def  = 7;   // 采集点变化定义
+    google.protobuf.Struct verify_def = 8;   // 采集点校验定义
+    google.protobuf.Struct extend_def = 9;   // 采集点扩展定义
+    google.protobuf.Struct exp_def    = 10;  // 采集点扩展定义
+    google.protobuf.Struct prot_def   = 11;  // 采集点协议定义
+    google.protobuf.Struct val_def    = 12;  // 采集点值定义
+    google.protobuf.Struct simulator  = 13;  // 采集点模拟器
+  }
+}
+
+// 配置查询相关接口
+service Cmdb {
+  // @alias=/Cmdb/GetDeviceEntity    获取设备列表
+  rpc GetDeviceEntity(ReqGetDeviceEntity) returns (RspGetDeviceEntity);
+  // @alias=/Cmdb/GetDeviceTree    获取设备树
+  rpc GetDeviceTree(ReqGetDeviceTree) returns (RspGetDeviceTree);
+  // @alias=/Cmdb/GetSubTree    获取设备子树
+  rpc GetSubTree(ReqGetSubTree) returns (RspGetSubTree);
+  // @alias=/Cmdb/GetDevicePoint    获取测点信息
+  rpc GetDevicePoint(ReqGetDevicePoint) returns (RspGetDevicePoint);
+  // @alias=/Cmdb/GetSubTreeFieldDic 获取子树字段字典
+  rpc GetSubTreeFieldDic(ReqGetSubTreeFieldDic) returns (RspCommonGetKeyDict);
+  // @alias=/Cmdb/GetMozuInfo 获取模组信息
+  rpc GetMozuInfo(ReqGetMozuInfo) returns (RspGetMozuInfo);
+  // @alias=/Cmdb/GetCollectorStatusTree 获取采集设备状态树
+  rpc GetCollectorStatusTree(ReqGetCollectorStatusTree) returns (RspGetCollectorStatusTree);
+  // @alias=/Cmdb/GetCollectorInfo 获取采集设备信息
+  rpc GetCollectorInfo(ReqGetCollectorInfo) returns (RspGetCollectorInfo);
+  // @alias=/Cmdb/GetCollectorPoint 获取采集设备测点信息
+  rpc GetCollectorPoint(ReqGetCollectorPoint) returns (RspGetCollectorPoint);
+}
+
+/*--------------------------------------------------------------------------*/
+
+// 导出数据-请求参数
+message ReqCommonExportData {
+  string export_type           = 1;  // 导出类型
+  google.protobuf.Struct param = 2;  // 请求参数
+  string file_name             = 3;  // 文件名称
+  repeated FieldMap fields     = 4;  // 字段映射
+  // 字段映射
+  message FieldMap {
+    string field_en = 1;  // 字段英文
+    string field_cn = 2;  // 字段中文
+  }
+}
+
+//  获取配置字典-请求参数
+message ReqCommonGetDict {
+  string dic_type = 1;  // 字段类型
+  string filter   = 2;  // 过滤条件
+  int32 mozu_id   = 3;  // 模组ID
+}
+
+// 获取Key配置字典-响应参数
+message RspCommonGetKeyDict {
+  repeated string list = 1;  // 字典数据
+}
+
+// 获取KV配置字典-响应参数
+message RspCommonGetKvDict {
+  map<string, string> kvs = 1;  // 字典数据列表
+}
+
+// 通用的接口
+service Common {
+  // @alias=/Common/ExportData        导出数据
+  rpc ExportData(ReqCommonExportData) returns (google.protobuf.Empty);
+  //  @alias=/Common/GetKeyDict    获取配置字典-单字段
+  rpc GetKeyDict(ReqCommonGetDict) returns (RspCommonGetKeyDict);
+  //  @alias=/Common/GetKvDict    获取配置字典-KV字段
+  rpc GetKvDict(ReqCommonGetDict) returns (RspCommonGetKvDict);
+}
+
+/*--------------------------------------------------------------------------*/
+
+// 数据查询接口
+service Data {
+  // @alias=/Data/Query    获取数据
+  rpc Query(ReqDataQuery) returns (RspDataQuery);
+  // @alias=/Data/TracePoint    测点溯源
+  rpc TracePoint(ReqTracePoint) returns (RspTracePoint);
+  // @alias=/Data/QueryLatest    查询最新数据
+  rpc QueryLatest(ReqQueryLatest) returns (RspQueryLatest);
+}
+
+//  获取数据-请求参数
+message ReqDataQuery {
+  repeated Conditions conditions = 1;  // 查询条件
+  DataType data_type             = 2;  // 数据时效
+  enum DataType {
+    CURRENT  = 0;  // 实时
+    HISTORY  = 1;  // 历史
+    POINT_DB = 5;  // PointDB测点
+  }
+  string start_time = 3;       // 起始时间
+  string end_time   = 4;       // 结束时间
+  int32 interval    = 5;       // 时间间隔（s）
+  string operator = 6;         // 操作符
+  string keyword        = 7;   // 关键词
+  bool cascade          = 8;   // true表示需要级联子设备
+  repeated string stats = 9;   // 统计（count/max/min/sum/avg）
+  int32 page            = 10;  // 页数
+  int32 size            = 11;  // 页大小
+  int32 mozu_id         = 12;  // 模组ID
+}
+
+message Conditions {
+  string name           = 1;  // 条件名称 (point_key/point_id/device_gid/device_type_zh/point_id_en) 含义见下方响应的PointObj中各字段
+  repeated string value = 2;  // 条件值
+}
+
+// 获取测点信息-响应参数
+message RspDataQuery {
+  int32 total            = 1;  // 标准测点数量
+  repeated PointObj list = 2;  // 测点对象
+}
+
+message PointObj {
+  string point_key              = 1;   // gid.测点英文名 e.g."3458876114561142784.ReturnTemp"
+  string point_id               = 2;   // 设备编号.测点中文名 e.g."NJ-JN-BD02-BTA301A-BMS-MC-DA.总可用物理内存"
+  string device_number          = 3;   // 设备编号 e.g."NJ-JN-BD02-BTA301A-BMS-MC-DA"
+  string device_gid             = 4;   // 设备gid e.g."3458876114561142784"
+  string point_name_zh          = 5;   // 测点中文名 e.g."总可用物理内存"
+  string point_name_en          = 6;   // 测点英文名 e.g."ItP"
+  repeated PointData point_data = 7;   // 测点数据
+  string device_type_en         = 8;   // 设备类型英文(设备种类) e.g."BAT"
+  string device_type_zh         = 9;   // 设备类型名称(设备种类) e.g."电池"
+  string application_type_en    = 10;  // 应用类型英文
+  string application_type_zh    = 11;  // 应用类型中文
+  string enum_value             = 12;  // 枚举值
+  string q                      = 13;  // 数据质量
+  string sign_type              = 14;  // 采集点、计算点
+  string unit                   = 15;  // 单位
+  bool status                   = 16;  // 是否为状态量
+  bool read_and_write           = 17;  // 是否为读写权限
+  bool simulation               = 18;  // 是否为模拟量
+  repeated Stats stats          = 19;  // 统计值
+  string update_time            = 20;  // 值更新时间
+  string latest_value           = 21;  // 最新测点值
+  int32 value_type              = 22;  // 数据类型 -1:错误,-2:后台模拟值,1:double, 2:boolean, 3:long, 4:other(字符串)
+  string point_id_en            = 23;  // 设备编号.测点英文名 e.g."NJ-JN-BD02-BTA301A-BMS-MC-DA.cpu"
+}
+
+message PointData {
+  string update_time = 1;  // 更新时间
+  string value       = 2;  // 测点值
+}
+
+message Stats {
+  string name  = 1;  // 统计项（count/max/min/sum/avg）
+  double value = 2;  // 统计值
+}
+
+// 测点溯源-请求参数
+message ReqTracePoint {
+  int32 mozu_id    = 1;  // 模组ID
+  string point_key = 2;  // 测点唯一标识
+}
+
+// 测点溯源-响应参数
+message RspTracePoint {
+  string var_name                 = 1;   // 变量标识
+  string device_gid               = 2;   // 设备GID
+  string device_number            = 3;   // 设备编码
+  string point_name_en            = 4;   // 测点名称英文
+  string point_name_zh            = 5;   // 测点名称中文
+  string point_key                = 6;   // 测点标识
+  StdPoint std_info               = 7;   // 标准点信息
+  CollectPoint collect_info       = 8;   // 采集点信息
+  PointValue value                = 9;   // 测点值信息
+  repeated RspTracePoint children = 10;  // 子节点
+  int32 point_type                = 11;  // 测点类型
+
+  // 标准点信息
+  message StdPoint {
+    string belong_collector  = 1;  // 归属采集器
+    string expression        = 2;  // 测点表达式
+    string expression_map    = 3;  // 测点映射(设备GID)
+    string expression_map_zh = 4;  // 测点映射(设备编号)
+    string value_unit        = 5;  // 测点值单位
+    string value_enum        = 6;  // 值枚举映射
+  }
+
+  // 采集点信息
+  message CollectPoint {
+    int32 collector_type = 1;  // 采集设备类型
+    string channel_link  = 2;  // 采集通道信息
+    string template_info = 3;  // 采集模版
+    string exp_def       = 4;  // 表达式定义
+    string prot_def      = 5;  // 采集命令定义
+    string val_def       = 6;  // 值定义
+    string simulator     = 7;  // 模拟规则定义
+  }
+}
+
+// 测点值信息
+message PointValue {
+  double val    = 1;  // 测点值
+  int64 ts      = 2;  // 测点时间
+  int32 quality = 3;  // 测点质量
+}
+
+// 测点值查询-请求参数
+message ReqQueryLatest {
+  int32 mozu_id              = 1;  // 模组ID
+  repeated string point_keys = 2;  // 测点标识
+}
+
+// 测点值查询-响应参数
+message RspQueryLatest {
+  map<string, PointValue> maps = 1;
+}

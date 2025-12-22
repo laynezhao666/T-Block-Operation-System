@@ -1,0 +1,26 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(span) {
+  font-size: inherit;
+  color: inherit;
+
+  @include m(default) {
+    color: $--color-text-regular;
+  }
+  @include m(primary) {
+    color: $--color-primary;
+  }
+  @include m(success) {
+    color: $--color-success;
+  }
+  @include m(info) {
+    color: $--color-info;
+  }
+  @include m(danger) {
+    color: $--color-danger;
+  }
+  @include m(warning) {
+    color: $--color-warning;
+  }
+}

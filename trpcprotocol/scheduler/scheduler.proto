@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package tbos.scheduler;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "trpcprotocol/scheduler";
+
+// 实例信息
+message WorkerInfo {
+	string ip                      = 1;  // 注册IP
+	int32 port                     = 2;  // 注册端口
+	int64 start_time               = 3;  // 启动时间
+	int32 max_process_cap          = 4;  // 最大处理能力
+	string task_ver_mark           = 5;  // 任务版本标识
+	WorkerType worker_type         = 6;  // Worker类型
+	string worker_set              = 7;  // Worker实例所属Set
+	WorkerStatus worker_status     = 8;  // Worker状态
+	WorkerProtocol worker_protocol = 9;  // Worker协议
+
+	// 实例类型
+	enum WorkerType {
+		INVALID   = 0;  // 无效的类型
+		COLLECTOR = 1;  // 采集Worker
+		POINT     = 2;  // 测点计算Worker
+		ALARM     = 3;  // 告警计算Worker
+	}
+
+	// 实例状态
+	enum WorkerStatus {
+		HEALTHY   = 0;  // 健康
+		UNHEALTHY = 1;  // 不健康
+		SHUTDOWN  = 2;  // 关闭
+	}
+
+	// 实例协议
+	enum WorkerProtocol {
+		HTTP = 0;  // HTTP协议
+		TRPC = 1;  // TRPC协议
+	}
+}
+
+// Worker注册相关接口
+service Register {
+	// @alias=/Register/Heartbeat  上报心跳
+	rpc Heartbeat(WorkerInfo) returns (google.protobuf.Empty);
+}
+
+// 重置调度任务-请求参数
+message ReqResetScheduler {
+	string type      = 1;  // 任务类型: alarm/collector/point
+	string set_group = 2;  // 所属Set
+}
+
+// 展示所有调度任务-响应参数
+message RspShowAllScheduler {
+	repeated TaskItem task = 1;  // 所有调度任务
+  // 调度任务详情
+	message TaskItem {
+		string name                     = 1;   // 调度任务名称
+		string type                     = 2;   // 调度任务类型
+		bool disable                    = 3;   // 是否禁用
+		string mysql_name               = 4;   // 使用的MySQL实例名称
+		string redis_name               = 5;   // 使用的Redis实例名称
+		int32 interval_sec              = 6;   // 调度间隔(秒), 默认30s
+		string lock_key                 = 7;   // 分布式锁key
+		int32 lock_key_expire_sec       = 8;   // 分布式锁key过期时长(秒),默认60s
+		string last_ver_str_key         = 9;   // 记录数据上次更新的key
+		string register_worker_key      = 10;  // 获取注册的worker列表的key
+		string last_register_worker_key = 11;  // 记录上次注册的worker列表的key
+		string last_assign_result_key   = 12;  // 记录上次分配结果的key
+		int32 last_assign_shard_cnt     = 13;  // 记录上次分配结果缓存分片数
+		string set_group                = 14;  // 跨园区调度时,使用这个字段区分不同的园区
+		repeated int32 filter_mozu      = 15;  // 需要调度的模组,默认为空代表全部模组
+		bool old_ver                    = 16;  // 是否是旧版本
+	}
+}
+
+// 管理接口
+service Admin {
+	// @alias=/Admin/ResetScheduler  重置调度任务
+	rpc ResetScheduler(ReqResetScheduler) returns (google.protobuf.Empty);
+	// @alias=/Admin/ShowAllScheduler  展示所有调度任务
+	rpc ShowAllScheduler(google.protobuf.Empty) returns (RspShowAllScheduler);
+}

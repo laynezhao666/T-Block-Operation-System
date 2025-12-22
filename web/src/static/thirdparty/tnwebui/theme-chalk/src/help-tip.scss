@@ -1,0 +1,13 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(help-tip) {
+  .tn-icon-question {
+    font-size: 24px;
+    color: $--color-warning;
+    vertical-align: middle;
+    &.default {
+      color: #333;
+    }
+  }
+}

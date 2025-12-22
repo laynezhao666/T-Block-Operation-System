@@ -1,0 +1,132 @@
+/* reset */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+body, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, textarea, p, blockquote, th, td, hr, button, article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  margin: 0;
+  padding: 0;
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+audio, canvas, video {
+  display: inline-block;
+  *display: inline;
+  *zoom: 1;
+}
+
+body, button, input, select, textarea {
+  font: 14px/1.5 "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: normal;
+  font-size: 1em;
+}
+
+a:active {
+  background-color: transparent;
+}
+
+small, cite, code, em, th, i, b {
+  font-size: 1em;
+  font-style: normal;
+  font-weight: 500;
+}
+
+input, select, textarea, button {
+  font-size: 1em;
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+button, input[type=button], input[type=submit] {
+  cursor: pointer;
+}
+
+button[disabled], input[disabled] {
+  cursor: default;
+}
+
+button::-moz-focus-inner, input::-moz-focus-inner {
+  border: 0 none;
+  padding: 0;
+}
+
+textarea {
+  overflow: auto;
+  vertical-align: top;
+}
+
+table {
+  text-align: center;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+fieldset, img, iframe {
+  border: 0 none;
+}
+
+img {
+  display: inline-block;
+  vertical-align: bottom;
+  -ms-interpolation-mode: bicubic;
+}
+
+iframe {
+  display: block;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+li {
+  vertical-align: top;
+}
+
+q:before, q:after {
+  content: '';
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+// 滚动条
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: #F6F6F6;
+
+  &-thumb {
+    border-radius: 4px;
+    background: #C0C0C0;
+  }
+  &-corner {
+    background: #F6F6F6;
+  }
+  &-track {
+    background: #F6F6F6;
+  }
+  &-track-piece {
+    background: #F6F6F6;
+    width: 8px;
+  }
+}
+
+.el-loading-mask.is-fullscreen .el-loading-spinner {
+  margin-top: -100px;
+}
+.el-loading-spinner .el-loading-text {
+  color:#1470CC;
+  font-weight: bold;
+}

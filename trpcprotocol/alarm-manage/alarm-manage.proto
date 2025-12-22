@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package tbos.alarm;
+
+option go_package = "trpcprotocol/alarm-manage";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
+message AlarmMsgPb {
+  int64 start_at       = 1;
+  int64 end_at         = 2;
+  int64 rid            = 3;
+  string gid           = 4;
+  string device_number = 5;
+  string level         = 6;
+  string alarm_name    = 7;
+  string content       = 8;
+  int32 mozu_id        = 9;
+  int32 env            = 10;
+  string analyze_result = 11;
+}
+
+// 同步FOC告警数据协议
+message AlertInfo {
+  int64 StartAt        = 1;   // 触发时间
+  string Content       = 2;   // 告警内容
+  int64 RuleId         = 3;   // 策略ID
+  DeviceAttr Device    = 4;   // 告警设备
+  string Level         = 5;   // 告警级别
+  string AnalyzeResult = 6;   // 分析过程
+  int64 EndAt          = 7;   // 恢复时间
+  string AlarmType     = 8;   // 告警类型
+  int32 MozuId         = 9;   // 模组ID
+  int64 AlarmId        = 10;  // 告警ID
+  string Fingerprint   = 11;  // 告警指纹
+  string DeviceTypeEn  = 12;  // 英文设备类型
+  string RoomName      = 13;  // 房间名
+  string BoxName       = 14;  // 方仓名
+  string DeviceNumber  = 15;  // 告警设备编号
+  string AlarmIdString = 16;  // v1.0 告警ID
+  int64 RID            = 17;  // 策略唯一ID
+  string Location      = 18;  // 添加网络设备/服务器告警位置信息
+  message DeviceAttr {
+    uint64 gid = 1;
+    string DeviceNumber = 2;
+  }
+}
+
+message ReqResendAlarm {
+  int32 mozu_id      = 1;  // mozuId，若为0，则推送全部模组
+  int32 rescend_type = 2;  // 推送告警类型 0: 未挂起告警 1: 挂起告警
+}
+
+service Manage {
+  // @alias=/alarm/manage/bot 企微机器人回调
+  rpc Bot(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // @alias=/alarm/manage/pushAlarm 接口传输告警信息
+  rpc PushAlarm(AlarmMsgPb) returns (google.protobuf.Empty);
+  // @alias=/alarm/manage/ResendAlarm 重新推送告警信息
+  rpc ResendAlarm(ReqResendAlarm) returns (google.protobuf.Empty);
+}
+
+

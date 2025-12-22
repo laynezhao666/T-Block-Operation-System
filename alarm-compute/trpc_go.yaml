@@ -1,0 +1,130 @@
+etrpc:
+  service_name: alarm-compute
+  service_port: ${PORT_ALARM_COMPUTE}
+global:
+  max_frame_size: 1048576000
+  namespace: Production
+  local_ip: ${LOCAL_IP}
+server:
+  filter:
+    - recovery
+  server: ${etrpc.service_name}
+  service:
+    - ip: 0.0.0.0
+      name: ${etrpc.service_name}
+      network: tcp
+      port: ${etrpc.service_port}
+      protocol: http
+client:
+  timeout: 3000
+  service:
+    - name: trpc.kafka.tbos.rule
+      target: kafka://${KAFKA_ADDR}?topic=${KAFKA_ALARM_VALID_TOPIC}&partitioner=roundrobin&maxMessageBytes=3145728&compression=lz4
+    - name: trpc.kafka.tbos.alert
+      target: kafka://${KAFKA_ADDR}?topic=${KAFKA_ALARM_PRODUCE_TOPIC}&partitioner=roundrobin&maxMessageBytes=3145728&compression=lz4
+    - name: trpc.kafka.tbos.data
+      target: kafka://${KAFKA_ADDR}?topic=${KAFKA_POINT_TOPIC}&partitioner=roundrobin&maxMessageBytes=3145728&compression=lz4
+    - name: trpc.mysql.tbos.alarm
+      target: dsn://${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_ADDR})/${MYSQL_DATABASE}?charset=utf8mb4&parseTime=True&loc=Local
+    - callee: tbos.data.query.Data
+      name: data-query
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_DATA_QUERY}
+    - callee: tbos.alarm.Manage
+      name: alarm-manage
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_ALARM_MANAGE}
+    - callee: tbos.scheduler.Register
+      name: scheduler
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_SCHEDULER}
+
+plugins:
+  database:
+    gorm:
+      logger:
+        colorful: true
+        ignore_record_not_found_error: true
+        log_level: 3
+        max_sql_size: 256
+        slow_threshold: 3000
+  log:
+    default:
+      - caller_skip: 3
+        enable_color: true
+        formatter: console
+        level: info
+        writer: console
+
+heartbeat:
+  port: ${PORT_ALARM_COMPUTE}
+  max_process_cap: 0
+
+diagnose:
+  channel_size: 500
+  data_pool_size: 10
+  exp_pool_size: 5
+  step_pool_size: 10
+
+MaxPointCountForDataQuery: 10000
+RealTimeConfig:
+  ParallelExecWpSize: 5
+  VaryPointBatchSize: 3000
+  VaryPointPoolSize: 200
+  VaryPointQueryTimeSpan: 5
+  EmptyVaryPointCountLimit: 4
+  RealTimeTaskInterval: 1
+  TotalAnalyzeCycleCount: 24
+  RealTimeBatchSize: 200
+  RealTimeTaskPoolSize: 100
+
+DelayTimeConfig:
+  ParallelExecWpSize: 6
+  VaryPointBatchSize: 3000
+  VaryPointPoolSize: 200
+  VaryPointQueryTimeSpan: 5
+  EmptyVaryPointCountLimit: 3
+  DelayTimeTaskInterval: 3
+  TotalAnalyzeCycleCount: 6
+  DelayTimeTaskPoolSize: 6000
+  IntervalRequestPoolSize: 100
+  IntervalBatchPointSize: 300
+  DurationRequestPoolSize: 400
+  DurationBatchPointSize: 50
+  JPRangeSec: 30
+
+VirtualConfig:
+  VaryPointBatchSize: 3000
+  VaryPointPoolSize: 200
+  VaryPointQueryTimeSpan: 5
+  EmptyVaryPointCountLimit: 3
+  VirtualTaskInterval: 2
+  TotalAnalyzeCycleCount: 5
+  VirtualTaskPoolSize: 6000
+  IntervalRequestPoolSize: 100
+  IntervalBatchPointSize: 300
+  DurationRequestPoolSize: 400
+  DurationBatchPointSize: 50
+  JPRangeSec: 30
+  RoundPrecision: 2
+  PointKafkaBatchSize: 200
+  FlushInterval: 100
+
+ActiveAlarmCache:
+  ActiveAlarmSyncTimeSpan: 300
+  ActiveAlarmSyncTimeInterval: 5
+  ActiveNormalSyncInterval: 300
+  ActiveRequestBatchSize: 5000
+  CacheKeyTimeDuration: 86400
+
+HeartBeatConfig:
+  HeartBeatInterval: 5
+
+ValidateRecordConfig:
+  BatchSize: 1000
+  FlushInterval: 1000
+  FailedDispatchInterval: 5000
+
+MysqlTableName:
+  ActiveAlarm: t_alarm_active
+  HistoryAlarm: t_alarm_history

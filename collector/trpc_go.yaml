@@ -1,0 +1,29 @@
+etrpc:
+  service_name: collector
+  service_port: ${PORT_COLLECTOR}
+global:
+  max_frame_size: 1048576000
+  namespace: Production
+  local_ip: ${LOCAL_IP}
+server:
+  service:
+    - name: ${etrpc.service_name}
+      network: tcp
+      ip: 0.0.0.0
+      port: ${etrpc.service_port}
+      protocol: http
+client:
+  network: tcp
+  service:
+    - name: trpc.kafka.producer.mainStdPoint
+      target: kafka://${KAFKA_ADDR}?topic=${KAFKA_POINT_TOPIC}&partitioner=roundrobin&maxMessageBytes=3145728&compression=lz4
+      timeout: 30000
+    - name: trpc.kafka.producer.backupStdPoint
+      target: kafka://${KAFKA_ADDR}?topic=${KAFKA_POINT_TOPIC}&partitioner=roundrobin&maxMessageBytes=3145728&compression=lz4
+      timeout: 30000
+    - callee: tbos.cmdb.ConfigQuery
+      name: cmdb
+      protocol: http
+      target: ip://${LOCAL_IP}:${PORT_CMDB}
+features:
+  send_type: kafka

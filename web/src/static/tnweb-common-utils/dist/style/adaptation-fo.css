@@ -1,0 +1,16 @@
+input[type="checkbox"] {
+  width:0px;
+}
+.wr-header .navbar li > a {
+  color: #A1C6EB;
+}
+.wr-header .navbar li.active > a, .wr-header .navbar li:hover > a {
+  color: #FFFFFF;
+}
+.sidebar-nav li > a {
+  color:#666666;
+}
+.sidebar-nav li.active > a , .sidebar-nav li:hover > a{
+  color:#1470cc;
+}
+

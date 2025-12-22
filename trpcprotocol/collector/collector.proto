@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package tbos.collector;
+
+option go_package = "trpcprotocol/collector";
+
+import "google/protobuf/empty.proto";
+
+/*----------------------数据推送----------------------*/
+
+// 采集器上传数据请求体
+message ReqSend {
+  bytes key   = 1;
+  bytes value = 2;
+}
+
+// 采集数据推送接口
+service DataBus {
+  // @alias=/DataBus/Send
+  rpc Send(ReqSend) returns (google.protobuf.Empty);
+}
+
+// 过渡办法，转发采集测点到MsgSender
+service CollectPointForward {
+  // @alias=/CollectPoint/Forward
+  rpc Forward(ReqSend) returns (google.protobuf.Empty);
+}
+
+/*----------------------配置获取----------------------*/
+
+// 配置获取请求体
+message ReqFetchConfig {
+  enum FetchType {
+    INVALID                   = 0;
+    FETCH_COLLECTOR_DEVICES   = 1;
+    FETCH_COLLECTOR_TEMPLATES = 2;
+    FETCH_STD_POINTS          = 3;
+    FETCH_CONFIG_MODIFY_TIME  = 4;
+    FETCH_STD_DEVICES         = 5;
+    FETCH_COLLECTOR_POINTS    = 6;
+  }
+  enum FetchKey {
+    DEVICE_NUMBER = 0;
+    DEVICE_SN     = 1;
+  }
+  FetchType fetch_type = 1;
+  bytes params         = 2;
+  FetchKey fetch_key   = 3;
+}
+
+// 配置获取响应体
+message RspFetchConfig {
+  bytes data = 1;
+}
+
+// 配置获取接口
+service ConfigBus {
+  // @alias=/ConfigBus/FetchConfig
+  rpc FetchConfig(ReqFetchConfig) returns (RspFetchConfig);
+}
+
+/*----------------------对接外部平台----------------------*/
+
+message ExternalData {
+  message Point {
+    string i = 1;  // 测点名称或id
+    string v = 2;  // 测点值
+    string q = 3;  // 测点值的质量
+    string t = 4;  // 测点值的时间戳（秒）
+  }
+  string platform_id    = 1;  // 外部云平台的ID标识
+  uint64 seq            = 2;  // 消息序列号
+  int64 collect_s       = 3;  // 采集数据时的时间戳（秒）
+  int64 push_ms         = 4;  // 推送数据时的时间戳（毫秒）
+  int32 interval        = 5;  // 上报周期
+  int32 mozu_id         = 6;  // 模组id
+  repeated Point points = 7;  // 测点数据集合
+}
+
+// 对接外部平台
+service ExternalPlatform {
+  // @alias=/external-platform/data
+  rpc Data(ExternalData) returns (google.protobuf.Empty);
+}
+
+message ReportElvdbReq {
+  int32 mozu_id = 1;
+}
+
+message GetBAConfsReq {
+}
+
+message GetBAConfsRsp {
+  repeated BAConfItem list = 1;
+}
+
+message BAConfItem {
+  int32 mozu_id   = 1;
+  string addr     = 2;
+  string username = 3;
+  string password = 4;
+}
+
+// 成品机房配置对接
+service SpotConfig {
+  // @alias=/spot/ReportElvdb
+  rpc ReportElvdb(ReportElvdbReq) returns (google.protobuf.Empty);
+  // @alias=/spot/GetBAConfs
+  rpc GetBAConfs(GetBAConfsReq) returns (GetBAConfsRsp);
+}

@@ -1,0 +1,256 @@
+auth:
+  hmac:
+    allowed_algs:
+      - sha256
+    default_alg: sha256
+  refer2bus:
+    https://partner.example.com: partner_system
+  required_routes:
+    - /tbcm/device/ctl
+  security:
+    debug: false
+    enabled: true
+  sys_id_key:
+client:
+  filter: null
+  service:
+    - callee: tbos.DataBus
+      name: idc-tbos-collector-trpc
+      namespace: Production
+      network: tcp
+      protocol: trpc
+      timeout: 30000
+    - callee: tbos.ConfigBus
+      name: idc-tbos-collector-trpc
+      namespace: Production
+      network: tcp
+      protocol: trpc
+      timeout: 30000
+collector:
+  common:
+    packet_failed_count: 2
+    request_failed_count: 7
+    request_failed_time: 60
+  http: null
+  modbus:
+    serials_map:
+      COM1:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com1
+        id: COM1
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM2:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com2
+        id: COM2
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM3:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com3
+        id: COM3
+        parity: "N"
+        stopbit: "1"
+      COM4:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com4
+        id: COM4
+        parity: "N"
+        stopbit: "1"
+      COM5:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com5
+        id: COM5
+        parity: "N"
+        stopbit: "1"
+      COM6:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com6
+        id: COM6
+        parity: "N"
+        stopbit: "1"
+      COM7:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com7
+        id: COM7
+        parity: "N"
+        stopbit: "1"
+      COM8:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com8
+        id: COM8
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM9:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com9
+        id: COM9
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM10:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com10
+        id: COM10
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM11:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com11
+        id: COM11
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM12:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com12
+        id: COM12
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM13:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com13
+        id: COM13
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM14:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com14
+        id: COM14
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM15:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com15
+        id: COM15
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+      COM16:
+        baud: "9600"
+        databit: "8"
+        dev: /usr/dev/serial/com16
+        id: COM16
+        mode: "485"
+        parity: "N"
+        stopbit: "1"
+  snmp:
+    log_interval: 15
+    max_coroutine: 100
+    per_coroutine_points: 3000
+    request_total_timeout: 40000
+    retry: 1
+    timeout: 2000
+distributor:
+  backup_push: null
+  common:
+    interval_report_second: 0
+  forwards: null
+  http:
+    enable:
+      - collect_change
+      - collect_interval
+    north_whitelist:
+etrpc:
+  disable_polaris_register: true
+  ignore_rsp_wrapper_path:
+    - /cgi/rtd
+    - /cgi/rtdById
+  restful_service_port: "61001"
+  service_name: agent
+  service_port: 61000
+  trpc_service_port: 68081
+feature:
+  alarm_test: 0
+  backup_push: 0
+  collect_report: 1
+  devs_local: 1
+  mozu_topic: 0
+  simulation: 1
+  snmp-log: 0
+  snmp-retry: 1
+  standard_calculation: 1
+  zhiyan: 0
+global:
+  container_name: tbox-machine
+  env_name: tbox
+  namespace: Production
+plugin:
+  interruption_judge_threshold: 50
+  plugin_call_interval: 30
+plugins:
+  log:
+    default:
+      - caller_skip: 2
+        enable_color: true
+        formatter: console
+        level: warn
+        writer: console
+      - caller_skip: 2
+        level: warn
+        writer: file
+        writer_config:
+          compress: false
+          filename: server.log
+          log_path: ./log
+          max_age: 7
+          max_backups: 2
+          max_size: 100
+          roll_type: size
+          write_mode: 2
+project:
+  mode: agent
+  module_group: default
+  source: tlink
+server:
+  filter:
+    - recovery
+    - validation
+  server: agent
+  service:
+    - ip: 0.0.0.0
+      name: agent
+      network: tcp
+      port: 61000
+      protocol: http
+    - ip: 0.0.0.0
+      name: agent-restful
+      network: tcp
+      port: 61001
+      protocol: restful
+  timeout: 60000
+task:
+  local:
+    devs:
+      - ZW-FY-BD04-M101-ITMA-SPM-DA
+      - ZW-FY-BD04-M101-ITMA-SPM-DA
+      - ZW-FY-BD04-M101-ITMB-SPM-DA
+  mode: local
+tbox:
+  heartbeat_interval_ms: 5000
+test:
+  modbus_ip: 127.0.0.1
+  snmp_addr: 127.0.0.1:11161

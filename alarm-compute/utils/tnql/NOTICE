@@ -1,0 +1,12 @@
+声明
+
+Package tnql支持自定义的运算函数，完成更为综合的场景下的表达式计算功能。
+使用了以下项目的开源代码，并对其进行了修改。详细内容如下：
+
+1. govaluate
+   - 原始链接: https://github.com/Knetic/govaluate
+   - 主要修改内容:
+     - EvaluableExpression根据使用场景携带自定义格式的变量值
+     - parsing文件取值模式修改，由map[string]interface{} -> 自定义结构体取值.
+     - func_symbols添加多个自定义业务逻辑函数，这类函数的取值与计算位于/alarm-compute/logic/pointeval.
+   - Original project is licensed under the MIT License.

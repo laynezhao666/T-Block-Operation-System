@@ -1,0 +1,60 @@
+@import "~common/style/mixin";
+
+.table-toolbar {
+  position: relative;
+  padding: 16px 0 16px 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  background: #fff;
+
+  /deep/ [class^="tn-icon-"],
+  /deep/ [class*=" tn-icon-"] {
+    padding: $space-m 0;
+    margin-right: $space-m;
+    color: $text-color-light;
+    cursor: pointer;
+  }
+
+  &__right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    height: 56px;
+
+    > span {
+      height: 24px;
+    }
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+
+    .el-input__inner {
+      font-size: 16px;
+      color: #333;
+      border: none !important;
+      width: 300px;
+      height: 56px;
+      padding: 0;
+      text-align: right;
+
+      &:hover {
+        padding: 0;
+      }
+    }
+
+    .tn-icon {
+      padding-left: $space-m;
+      margin-right: $space-m;
+    }
+
+    &.active {
+      position: relative;
+      box-shadow: $box-shadow;
+      margin-right: $space-m;
+      z-index: 99;
+    }
+  }
+}

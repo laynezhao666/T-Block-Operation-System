@@ -1,0 +1,31 @@
+.virtual-legend-item {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333;
+  font-size: 14px;
+  line-height: 24px;
+  &.interactive {
+    cursor: pointer;
+  }
+  &.legend-hidden {
+    opacity: .5;
+  }
+  > * {
+    flex: 1;
+  }
+  .virtual-legend-circle {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 8px;
+    border-radius: 50%;
+  }
+  .virtual-legend-data {
+    text-align: right;
+    .virtual-legend-value {
+      font-size: 16px;
+      margin-right: 4px;
+    }
+  }
+}

@@ -1,0 +1,183 @@
+@import "mixins/mixins";
+@import "mixins/utils";
+@import "common/var";
+@import "select-dropdown";
+@import "input";
+@import "tag";
+@import "option";
+@import "option-group";
+@import "scrollbar";
+
+@include b(select) {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+
+  .el-select__tags > span {
+    display: contents;
+  }
+
+  &:hover(:not(.is-disabled)) {
+    .el-input:before {
+      border-bottom: 2px solid $--input-border-color-hover;
+    }    
+  }
+
+  .el-input__inner {
+    cursor: pointer;
+    padding-right: 35px;
+
+    &:focus {
+      border-color: $--select-input-focus-border-color;
+    }
+  }
+
+  .el-input {
+    & .el-select__caret {
+      transition: transform .3s;
+      transform: rotateZ(180deg);
+      cursor: pointer;
+
+      @include when(reverse) {
+        transform: rotateZ(0deg);
+      }
+
+      @include when(show-close) {
+        text-align: center;
+        transform: rotateZ(180deg);
+        border-radius: $--border-radius-circle;
+        color: $--select-input-color;
+        transition: $--color-transition-base;
+
+        &:hover {
+          color: $--select-close-hover-color;
+        }
+      }
+    }
+
+    &.is-disabled {
+      & .el-input__inner {
+        cursor: not-allowed;
+
+        &:hover {
+          border-color: $--select-disabled-border;
+        }
+      }
+    }
+
+    &.is-focus .el-input__inner {
+      border-color: $--select-input-focus-border-color;
+    }
+  }
+
+  .el-select__text {
+    cursor: pointer;
+    font-size: $--select-input-font-size;
+    
+    > span {
+      color: $--color-text-regular;
+
+      &.placeholder {
+        color: $--select-input-color;
+      }
+    }
+  }
+
+  .el-input {
+    height: auto;
+    
+    &.is-disabled {
+      & .el-input__inner {
+        cursor: not-allowed;
+
+        &:hover {
+          border-color: $--select-disabled-border;
+        }
+      }
+    }
+
+    &.is-focus .el-input__inner {
+      border-color: $--select-input-focus-border-color;
+    }
+  }
+
+  > .el-input {
+    display: block;
+  }
+
+  @include e(input) {
+    border: none;
+    outline: none;
+    padding: 0;
+    color: $--select-multiple-input-color;
+    font-size: $--select-font-size;
+    appearance: none;
+    height: 26px;
+    background-color: transparent;
+    @include when(mini) {
+      height: 14px;
+    }
+  }
+
+  @include e(close) {
+    cursor: pointer;
+    position: absolute;
+    top: 8px;
+    z-index: $--index-top;
+    right: 25px;
+    color: $--select-input-color;
+    line-height: 18px;
+    font-size: $--select-input-font-size;
+
+    &:hover {
+      color: $--select-close-hover-color;
+    }
+  }
+
+  @include e(tags) {
+    position: absolute;
+    line-height: normal;
+    white-space: normal;
+    z-index: $--index-normal;
+    top: calc(50%);
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    cursor: pointer;
+
+    &:hover ~ .el-input:before {
+      border-bottom: 2px solid $--input-border-color-hover;
+    }  
+  }
+
+  @include e(tags-text) {
+    display: inline-block;
+    vertical-align: top;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .el-tag {
+    &.el-tag--info {
+      box-sizing: border-box;
+      border-color: transparent;
+      margin: 0px 4px 4px 0;
+      height: $--font-line-height-extra-small + 2px;
+      line-height: $--font-line-height-extra-small;
+      font-size: $--font-size-extra-small;
+      color: $--color-text-regular;
+    }
+  }
+
+  &.no-input {
+    .el-select__text {
+      line-height: 26px;
+    }
+    .el-input__icon {
+      color: #c0c0c0;
+      vertical-align: top;
+    }
+  }
+}

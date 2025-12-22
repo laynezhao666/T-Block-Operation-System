@@ -1,0 +1,21 @@
+# Ignore all files by default
+*
+
+# Allow specific files and directories
+!agent/
+!alarm-compute/
+!alarm-manage/
+!alarm-server/
+!cgi/
+!cmdb/
+!collector/
+!common/
+!data-cache/
+!data-compute/
+!data-query/
+!data-store/
+!etrpc-go/
+!scheduler/
+!trpcprotocol/
+!go.work
+!go.work.sum

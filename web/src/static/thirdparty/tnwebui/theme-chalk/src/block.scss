@@ -1,0 +1,76 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(block) {
+  background: $--color-white;
+  box-shadow: $--block-box-shadow;
+
+  .el-form,
+  .el-descriptions {
+    padding: 16px 24px;
+  }
+
+  @include e(header) {
+    line-height: $--block-header-line-height;
+    padding: $--block-header-padding;
+    color: $--color-text-primary;
+    font-size: $--block-header-font-size;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+
+    &.has-border {
+      border-bottom: 1px solid $--border-color-light;
+    }
+
+    + .el-block__body {
+      .el-block__body-inner {
+        > .el-form,
+        > .el-descriptions {
+          padding-top: 0;
+        }
+      }
+    } 
+  }
+
+  @include e(body-inner) {
+    font-size: $--font-size-base;
+
+    &.no-padding {
+      padding: 0;
+    }
+  }
+
+  @include e(tools) {
+    margin-left: auto;
+
+    display: flex;
+    align-items: center;
+
+    font-size: 14px;
+    font-weight: normal;
+    color: #666;
+  }
+
+  @include e(collapse-control) {
+    margin-left: 24px;
+    height: 24px;
+  }
+
+  @include e(collapse-control-icon) {
+    transition: transform .2s;
+
+    @include when(rotated) {
+      transform: rotate(180deg);
+    }
+  }
+
+  @include m(inner) {
+    box-shadow: none;
+    margin: 0;
+  }
+
+  @include m(border) {
+    border-bottom: 1px solid $--border-color-light;
+  }
+}

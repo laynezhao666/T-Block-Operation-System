@@ -1,0 +1,302 @@
+@import "mixins/mixins";
+@import "mixins/utils";
+@import "common/var";
+@import "common/transition";
+
+@mixin menu-item {
+  height: 64px;
+  line-height: 64px;
+  display: flex;
+  align-items: center;
+  font-size: $--menu-item-font-size;
+  color: $--menu-item-color;
+  padding: 0 32px;
+  list-style: none;
+  cursor: pointer;
+  position: relative;
+  transition: border-color .2s, background-color .2s, color .1s;
+  box-sizing: border-box;
+  white-space: nowrap;
+
+  * {
+    vertical-align: middle;
+  }
+
+  [class^=tn-icon-] {
+    color: $--color-text-secondary;
+    margin-right: 24px; 
+  }
+
+  &:hover,
+  &:focus {
+    outline: none;
+    background-color: $--menu-item-hover-fill;
+  }
+
+  @include when(disabled) {
+    opacity: 0.25;
+    cursor: not-allowed;
+    background: none !important;
+  }
+}
+
+@include b(menu) {
+  list-style: none;
+  position: relative;
+  margin: 0;
+  padding-left: 0;
+  background-color: $--menu-item-fill;
+  @include utils-clearfix;
+
+  a,
+  a:hover {
+    color: inherit;
+  }
+
+  @include m(horizontal) {
+    border-right: none;
+    & > .el-menu-item {
+      float: left;
+      height: 48px;
+      line-height: 48px;
+      padding: 0 24px;
+      min-width: 112px;
+      justify-content: center;
+      margin: 0;
+      border-bottom: 2px solid transparent;
+      color: $--color-text-secondary;
+
+      a,
+      a:hover {
+        color: inherit;
+      }
+
+      &:not(.is-disabled):hover,
+      &:not(.is-disabled):focus{
+        background-color: #fff;
+      }
+    }
+    & > .el-submenu {
+      float: left;
+
+      &:focus,
+      &:hover {
+        outline: none;
+        .el-submenu__title {
+          color: $--color-text-primary;
+        }
+      }
+
+      &.is-active {
+        .el-submenu__title {
+          border-bottom: 2px solid $--color-primary;
+          color: $--color-text-primary;
+        }
+      }
+
+      & .el-submenu__title {
+        height: 48px;
+        line-height: 48px;
+        padding: 0 20px 0 24px;
+        min-width: 112px;
+        justify-content: center;
+        border-bottom: 2px solid transparent;
+        color: $--color-text-secondary;
+
+        &:hover {
+          background-color: #fff;
+        }
+      }
+      & .el-submenu__icon-arrow {
+        position: static;
+        vertical-align: middle;
+        margin-left: 0;
+        margin-top: -1px;
+      }
+    }
+    & .el-menu {
+      & .el-menu-item,
+      & .el-submenu__title {
+        background-color: $--color-white;
+        float: none;
+        height: 48px;
+        line-height: 48px;
+        padding: 0 24px;
+        color: $--color-text-secondary;
+      }
+      & .el-menu-item.is-active,
+      & .el-submenu.is-active > .el-submenu__title {
+        color: $--color-text-primary;
+      }
+    }
+    & .el-menu-item:not(.is-disabled):hover,
+    & .el-menu-item:not(.is-disabled):focus {
+      outline: none;
+      color: $--color-text-primary;
+    }
+    & > .el-menu-item.is-active {
+      border-bottom: 2px solid $--color-primary;
+      color: $--color-text-primary;
+    }
+  }
+  @include m(collapse) {
+    width: 64px;
+
+    > .el-menu-item,
+    > .el-submenu > .el-submenu__title {
+      padding: 0 20px;
+      
+      [class^="el-icon-"] {
+        margin: 0;
+        vertical-align: middle;
+        width: 24px;
+        text-align: center;
+      }
+      .el-submenu__icon-arrow {
+        display: none;
+      }
+      span {
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        visibility: hidden;
+        display: inline-block;
+      }
+    }
+
+    > .el-menu-item.is-active i {
+      color: inherit;
+    }
+
+    .el-menu .el-submenu {
+      min-width: 200px;
+    }
+
+    .el-submenu {
+      position: relative;
+      & .el-menu {
+        position: absolute;
+        margin-left: 5px;
+        top: 0;
+        left: 100%;
+        z-index: 10;
+        border: 1px solid $--border-color-light;
+        box-shadow: $--box-shadow-dark;
+      }
+
+      &.is-opened {
+        > .el-submenu__title .el-submenu__icon-arrow {
+          transform: none;
+        }
+      }
+    }
+  }
+  @include m(popup) {
+    z-index: 100;
+    min-width: 200px;
+    border: none;
+    box-shadow: $--box-shadow-dark;
+
+    &-bottom-start {
+      margin-top: 5px;
+    }
+    &-right-start {
+      margin-left: 5px;
+      margin-right: 5px;
+    }
+  }
+}
+@include b(menu-item) {
+  @include menu-item;
+
+  & [class^="el-icon-"] {
+    margin-right: 5px;
+    width: 24px;
+    text-align: center;
+    font-size: 18px;
+    vertical-align: middle;
+  }
+  @include when(active) {
+    color: $--color-primary;
+    i {
+      color: inherit;
+    }
+  }
+}
+  
+@include b(submenu) {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+
+  @include e(title) {
+    @include menu-item;
+
+    &:hover {
+      background-color: $--menu-item-hover-fill;
+    }
+  }
+  & .el-menu {
+    border: none;
+  }
+  & .el-menu-item {
+    height: 50px;
+    line-height: 50px;
+    padding: 0 45px;
+    min-width: 200px;
+  }
+  @include e(icon-arrow) {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    margin-top: -7px;
+    transition: transform .3s;
+
+    &[class^="tn-icon-"],
+    &[class*=" tn-icon-"] {
+      margin-top: -12px;
+    }
+  }
+  @include when(active) {
+    .el-submenu__title {
+      border-bottom-color: $--color-primary;
+    }
+  }
+  @include when(opened) {
+    > .el-submenu__title .el-submenu__icon-arrow {
+      transform: rotateZ(180deg);
+    }
+  }
+  @include when(disabled) {
+    .el-submenu__title,
+    .el-menu-item {
+      opacity: 0.25;
+      cursor: not-allowed;
+      background: none !important;
+    }
+  }
+  [class^="el-icon-"] {
+    vertical-align: middle;
+    margin-right: 5px;
+    width: 24px;
+    text-align: center;
+    font-size: 18px;
+  }
+}
+
+@include b(menu-item-group) {
+  > ul {
+    padding: 0;
+  }
+  @include e(title) {
+    padding: 7px 0 7px 20px;
+    line-height: normal;
+    font-size: 12px;
+    color: $--color-text-secondary;
+  }
+}
+
+.horizontal-collapse-transition .el-submenu__title .el-submenu__icon-arrow {
+  transition: .2s;
+  opacity: 0;
+}

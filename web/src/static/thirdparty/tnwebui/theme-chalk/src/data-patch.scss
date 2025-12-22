@@ -1,0 +1,69 @@
+@import "mixins/mixins";
+@import "common/var";
+
+$typeMap: (
+  primary: $--link-primary-font-color, 
+  danger: $--link-danger-font-color, 
+  success: $--link-success-font-color, 
+  warning: $--link-warning-font-color, 
+  info: $--link-info-font-color
+);
+
+@include b(data-patch) {
+  box-sizing: border-box;
+  display: inline-flex;
+  justify-content: center;
+  flex-direction: column;
+
+  @include e(title) {
+    font-size: $--font-size-base;
+    color: $--color-text-regular;
+    margin-bottom: 12px;
+    line-height: 19px;
+
+    display: flex;
+    align-items: center;
+  }
+
+  @include e(data) {
+    color: $--color-text-primary;
+    font-size: 0;
+  }
+
+  @include e(value) {
+    display: inline-block;
+    font-family: 'DINMittelschriftStd';
+    font-size: 32px;
+    line-height: 38px;
+  }
+  
+  @include e(prefix) {
+    font-size: $--font-size-base;
+    margin-right: 4px;
+  }
+
+  @include e(suffix) {
+    margin-left: 4px;
+    font-size: $--font-size-base;
+  }
+
+  @include m(small) {
+    @include e(title) {
+      margin-bottom: 10px;
+    }
+
+    @include e(value) {
+      font-size: 20px;
+      line-height: 20px;
+      margin-right: 4px;
+    }
+  }
+
+  @each $type, $primaryColor in $typeMap {
+    &.el-data-patch--#{$type} {
+      .el-data-patch__data {
+        color: $primaryColor;
+      }
+    }
+  }
+}

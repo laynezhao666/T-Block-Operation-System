@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "typeRoots": [
+      "./src/typings"
+    ],
+    "baseUrl": "src",
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "paths": {
+      "common/*": ["../src/static/tnweb-common-utils/dist/*"]
+    }
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

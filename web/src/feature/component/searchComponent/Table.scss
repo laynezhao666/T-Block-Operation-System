@@ -1,0 +1,89 @@
+.pagination {
+  background: #fbfbfb;
+  display: flex;
+  align-items: center;
+  padding-right: 24px;
+  color: #666;
+  height: 56px;
+
+  &-text {
+    margin-left: auto;
+  }
+}
+
+.middle-wrap{
+  vertical-align: middle;
+}
+
+.text-light {
+  color:#999 !important;
+}
+
+.table-wrap {
+  position: relative;
+
+  .selection-header {
+    $height: 64px;
+    position: absolute;
+    top: -$height;
+    z-index: 90;
+    height: $height;
+    width: 100%;
+    background-color: white;
+
+    > .tn-icon {
+      padding: 20px 16px;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+
+    .selection-text {
+      font-size: 20px;
+    }
+
+    span {
+      vertical-align: middle;
+    }
+
+    .right-btns {
+      float: right;
+      padding: 19px 0px;
+      margin-right: 24px;
+    }
+  }
+
+  .el-table {
+    &__header {
+      &-wrapper {
+        .tn-icon-pin-inclined {
+          display: none;
+        }
+      }
+    }
+
+    &__fixed,
+    &__fixed-right {
+      .tn-icon-pin {
+        display: none;
+      }
+    }
+
+    .cell {
+      white-space: nowrap;
+
+      a {
+        color: #1470cc;
+      }
+    }
+
+    .el-table-column--selection {
+      .cell {
+        text-overflow: unset;
+      }
+    }
+    // 防止滚动条触发翻页
+    .el-table__body-wrapper {
+      overscroll-behavior-x: none;
+    }
+  }
+}

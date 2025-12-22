@@ -1,0 +1,12 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(space) {
+  display: inline-flex;
+
+  @include m(vertical) {
+    width: 100%;
+    flex-direction: column;
+    vertical-align: top;
+  }
+}

@@ -1,0 +1,93 @@
+@import "mixins/mixins";
+@import "mixins/menu";
+@import "common/var";
+
+@include b(navbar) {
+  display: flex;
+  flex-shrink: 0;
+  background: $--color-primary;
+  color: $--color-white;
+  position: relative;
+  box-shadow: $--box-shadow-light;
+  position: relative;
+  z-index: 101;
+
+  @include e(title) {
+    box-sizing: border-box;
+    padding-left: 24px;
+    padding-top: 20px;
+    line-height: 32px;
+    height: 72px;
+    font-size: 20px;
+    transition: all .2s ease-in-out;
+  }
+
+  @include e(actions) {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding-right: 24px;
+    height: 72px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    color: $--color-primary-light-6;
+
+    > * {
+      margin-left: 24px;
+    }
+
+    .el-input.is-bordered {
+      min-width: 208px;         
+      padding: 4px 0;
+
+      .el-select__caret {
+        color: $--color-primary-light-7;
+      }
+
+      .el-input__inner {
+        background: transparent;
+        color: $--color-primary-light-7;
+        padding-left: 12px;
+        font-size: $--font-size-medium;
+        border-color: $--color-primary-light-6; 
+
+        &:hover,
+        &:focus {
+          border-color: $--color-primary-light-7;
+        }
+
+        &::selection{
+          background: $--color-primary-light-6;
+        }
+          
+        &::placeholder {
+          color: $--color-primary-light-6;
+        }
+      }
+    }
+
+    .el-dropdown {
+      color: #D0E3F5;
+      font-size: $--font-size-medium;
+      text-align: right;
+      white-space: nowrap;
+
+      &-link {
+        cursor: pointer;
+      }
+    }
+  }
+  
+  @include m(collapsed) {    
+    .el-navbar__title {
+      transition: all .2s ease-in-out;
+      transform: translateY(-16px);
+      opacity: 0;
+      visibility: hidden;
+      height: 24px;
+    }
+  }
+
+  @include menu;
+}

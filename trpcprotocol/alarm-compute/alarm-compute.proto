@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package tbos.alarm;
+
+option go_package = "trpcprotocol/alarm-compute";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
+message ReqStrategyRecv {
+	int64  recv_timestamp        = 1;  // 毫秒级时间戳，用于标识当前版本号下发的时间
+	string recv_version          = 2;  // 此次接收策略的版本号，用于校验
+	PublishType publish_type     = 3;  // 发布类型 0: 增量，1: 全量
+	repeated AddItem add_task    = 4;  // 要增加的任务列表，每个元素为一个策略实例
+	repeated string del_task_key = 5;  // 要删除的任务key列表，格式："rid;gid;version"
+	message AddItem {
+		int64 mozu_id             = 1;   // 模组Id
+		int64 rid                 = 2;   // 策略Id
+		string version            = 3;   // 版本号
+		int64 rid_type            = 4;   // 策略类型
+		string alarm_level        = 5;   // 告警级别
+		string alarm_name         = 6;   // 告警名称
+		string content_template   = 7;   // 告警内容模版
+		string gid                = 8;   // 告警设备gid
+		string alarm_expression   = 9;   // 告警表达式
+		string restore_expression = 10;  // 恢复表达式
+		string expression_map     = 11;  // 变量映射map
+	}
+	// 更新任务类型
+	enum PublishType {
+		INCREMENT = 0;  // 增量更新
+		UPDATEALL = 1;  // 全量更新
+	}
+}
+
+// 策略任务生效信息
+message ValidateTaskItem {
+	bool successed      = 1;   // 是否执行成功
+	int64 mozu_id       = 2;   // 模组Id
+	int64 rid           = 3;   // 策略号
+	string alarm_level  = 4;   // rid的告警级别
+	string version      = 5;   // 策略版本号
+	int64 rid_type      = 6;   // 策略类型
+	string gid          = 7;   // gid
+	int64 run_time      = 8;   // 执行时间
+	bool fired          = 9;   // 是否告警
+	int64 error_code    = 10;  // 错误码
+	string error_name   = 11;  // 错误名称
+	string error_detail = 12;  // 错误详情
+	int64 pv_time       = 13;  // 查询时 数据模块的时间快照
+}
+
+// 策略任务生效信息列表
+message ValidateTaskList {
+	repeated ValidateTaskItem valid_task_list = 1;
+}
+
+// 告警/恢复信息
+message FireAlertMsg {
+	int64 start_at        = 1;
+	int64 end_at          = 2;
+	int64 rid             = 3;
+	string gid            = 4;
+	string device_number  = 5;
+	string level          = 6;
+	string alarm_name     = 7;
+	string content        = 8;
+	int32 mozu_id         = 9;
+	int32 env             = 10;
+	string analyze_result = 11;
+}
+
+message ExpressionItem {
+	string express              = 1;  // 英文 策略计算表达式
+	map<string, PointIds> p_map = 2;  // Pmap 变量 -> 测点名称映射
+	map<string, PointValue> pv  = 3;  // map[point_id] map[time]value 可空
+	int64 begin_time            = 4;  // 开始时间
+	int64 end_time              = 5;  // 结束时间
+	int32 interval              = 6;  // 每隔多久计算一次
+	message PointIds {
+		repeated string list = 1;  // gid.PointName列表，用于存储变量映射
+	}
+	message PointValue {
+		map<string, double> tv = 1;  // map[time] value
+	}
+}
+
+// 表达式计算请求体，用于告警回放
+message ReqExpCompute {
+	int64 begin_time   = 1;  // 开始时间
+	int64 end_time     = 2;  // 结束时间
+	int32 interval     = 3;  // 每隔多久计算一次
+	bool with_value    = 4;  // 是否自带测点值
+	repeated Item list = 5;
+	message Item {    // 策略Item
+		string express              = 1;  // 英文 策略计算表达式
+		map<string, string> p_map   = 2;  // Pmap 变量 -> 测点名称映射
+		map<string, PointValue> pv  = 3;  // map[point_id] map[time_unix]value 可空
+		message PointValue {
+			map<int64, double> tv = 1;  // map[time] value
+		}
+	}
+}
+
+message RspExpCompute {
+	repeated Item list = 1;
+	message Item {
+		string express              = 1;  // 表达式
+		repeated StepResult cal_res = 2;  // 计算结果
+		message StepResult {
+			string timestamp = 1;  // 计算时间点
+			bool success     = 2;  // 计算成功/失败
+			bool fired       = 3;  // 告警/未告警
+		}
+	}
+}
+
+service AlarmCompute {
+	// http interface must use @alias to redefine, like restful
+
+	// @alias=/Strategy/RecvTask
+	rpc RecvTask (ReqStrategyRecv) returns (google.protobuf.Empty);
+
+	// @alias=/Alarm/ExpCompute
+	rpc ExpCompute (ReqExpCompute) returns (RspExpCompute);
+}
+
+
+
+
+

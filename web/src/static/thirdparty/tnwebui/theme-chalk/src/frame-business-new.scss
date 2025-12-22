@@ -1,0 +1,77 @@
+@import "mixins/mixins";
+@import "common/var";
+
+@include b(frame-business-new) {
+
+  .app {
+    height: 100vh;
+    background: #f6f6f6;
+    display:flex;
+    
+    &-container {
+      min-width: 968px;
+      max-width: 1304px;
+      margin: 0 auto;
+    }
+
+    &-mozu-cascader{
+      min-width: 300px;
+    }
+  }
+
+  #app_main {
+    padding-bottom: 16px;
+    
+  }
+
+  .is-hide-main-nav .el-navbar {
+    display: none;
+  }
+
+  .is-hide-main-nav .el-sidebar {
+    display: none;
+  }
+
+  .is-hide-main-nav #app_main {
+    padding: 0;
+  }
+
+  .have-read {
+    /* margin-left: 700px; */
+    float: right;
+    margin-right: 60px;
+    margin-top: 6px;
+    /* margin-bottom: 17px; */
+    font-size: 14px;
+    color: #1470CC;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .sidebar-demo {
+    display: flex;
+
+    &__logo {
+      margin-right: 12px;
+    }
+
+    &__title {
+      font-size: 16px;
+      line-height: 19px;
+      margin-bottom: 6px;
+    }
+
+    &__sub-title {
+      height: 16px;
+      line-height: 16px;
+      font-size: 12px;
+      max-width: 128px;
+      color: #999;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+
+}

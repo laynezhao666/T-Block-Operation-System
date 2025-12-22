@@ -1,0 +1,34 @@
+etrpc:
+  service_name: data-store
+  service_port: ${PORT_DATA_STORE}
+global:
+  max_frame_size: 1048576000
+  namespace: Production
+  local_ip: ${LOCAL_IP}
+server:
+  filter:
+    - recovery
+  server: ${etrpc.service_name}
+  service:
+    - ip: 0.0.0.0
+      name: ${etrpc.service_name}
+      network: tcp
+      port: ${etrpc.service_port}
+      protocol: http
+    - name: trpc.kafka.tbos.major
+      address: ${KAFKA_ADDR}?topics=${KAFKA_POINT_TOPIC}&group=data-store&batch=20&batchFlush=200&initial=oldest
+      protocol: kafka
+client:
+  service:
+#    - name: trpc.influxdb.idc.tbos
+#      target: influxdb://${INFLUXDB_USER}:${INFLUXDB_PASSWORD}@${INFLUXDB_ADDR}?timeout=10000&write_encoding=gzip
+
+store:
+  plugins:
+#    - name: tbos-influx
+#      type:  influx
+#      extra:
+#        influx_name: trpc.influxdb.idc.tbos
+#        influx_database: ${INFLUXDB_DBNAME}
+#        data_measurement: ${INFLUXDB_POINT_MEASUREMENT}
+#        bath_size: 50000

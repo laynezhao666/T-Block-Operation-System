@@ -1,0 +1,31 @@
+etrpc:
+  service_name: data-cache
+  service_port: ${PORT_DATA_CACHE}
+global:
+  max_frame_size: 1048576000
+  namespace: Production
+  local_ip: ${LOCAL_IP}
+server:
+  filter:
+    - recovery
+  server: ${etrpc.service_name}
+  service:
+    - ip: 0.0.0.0
+      name: ${etrpc.service_name}
+      network: tcp
+      port: ${etrpc.service_port}
+      protocol: http
+    - name: trpc.kafka.tbos.major
+      address: ${KAFKA_ADDR}?topics=${KAFKA_POINT_TOPIC}&group=data-cache&batch=20&batchFlush=200&initial=oldest&resetSec=3600
+      protocol: kafka
+plugins:
+  log:
+    default:
+      - caller_skip: 3
+        enable_color: true
+        formatter: console
+        level: info
+        writer: console
+store:
+  store_minute: 61
+  bulk_cnt: 100000
