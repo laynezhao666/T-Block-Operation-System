@@ -108,6 +108,47 @@ const menus = [
     ],
   },
   {
+    name: '安防系统',
+    href: '/tisspage/im-security-camera',
+    icon: 'shield',
+    showtype: true,
+    children: [
+      {
+        name: '门禁管理',
+        icon: 'door',
+        href: '/tedge/door-system',
+        showtype: true,
+        children: [
+          {
+            name: '控制器及门状态',
+            href: '/tedge/doors-overview',
+            showtype: true,
+          },
+          {
+            name: '门禁事件',
+            href: '/tedge/security-records',
+            showtype: true,
+          },
+          {
+            name: '授权发卡',
+            href: '/tedge/security-auth-setting',
+            showtype: true,
+          },
+          {
+            name: '时间组',
+            href: '/tedge/security-time-period-setting',
+            showtype: true,
+          },
+          {
+            name: '异步消息',
+            href: '/tedge/security-requests',
+            showtype: true,
+          },
+        ],
+      },
+    ],
+  },
+  {
     name: '数据查询',
     icon: 'monitor',
     href: '/tedge/data-query-index',

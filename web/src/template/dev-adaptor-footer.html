@@ -1,2 +1,26 @@
 <script type='text/javascript' src='/static/devstyle/adaptor.js'></script>
-  
+
+<!-- 本地开发：跳过管理员登录校验 -->
+<script>
+  (function() {
+    var checkInterval = setInterval(function() {
+      if (window.tnwebServices && window.tnwebServices.loginStatusService) {
+        // 强制设置为已登录状态
+        window.tnwebServices.loginStatusService._adminLogined = true;
+        // 覆盖 adminLogined getter，始终返回 true
+        Object.defineProperty(window.tnwebServices.loginStatusService, 'adminLogined', {
+          get: function() { return true; },
+          configurable: true
+        });
+        // 覆盖 login 方法，避免请求不存在的后端服务
+        window.tnwebServices.loginStatusService.login = function() {
+          console.log('[DEV] 已跳过管理员登录');
+        };
+        // 覆盖 hasRight 方法，始终返回 true
+        window.tnwebServices.loginStatusService.hasRight = function() { return true; };
+        clearInterval(checkInterval);
+        console.log('[DEV] 管理员登录校验已跳过');
+      }
+    }, 100);
+  })();
+</script>

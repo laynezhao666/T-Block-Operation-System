@@ -1,5 +1,5 @@
-const DEV_HOST = '';
-const LOCAL_HOST = '';
+const DEV_HOST = 'localhost:8080';
+const LOCAL_HOST = 'localhost';
 const path = require('path');
 module.exports = {
   common: {
@@ -50,30 +50,31 @@ module.exports = {
     host: LOCAL_HOST,
     proxyTable: {
       '/api/dcos': {
-        target: `https://${DEV_HOST}`,
+        target: `http://${DEV_HOST}`,
         changeOrigin: true,
       },
       '/cgi/idc-tbos-cgi': {
-        target: `https://${DEV_HOST}`,
+        target: `http://${DEV_HOST}`,
         changeOrigin: true,
       },
       '/cgi/tedge-bff': {
-        target: `https://${DEV_HOST}`,
+        target: `http://${DEV_HOST}`,
         changeOrigin: true,
       },
       '/cgi/singlegraph': {
-        target: `https://${DEV_HOST}`,
+        target: `http://${DEV_HOST}`,
         changeOrigin: true,
       },
       '/cgi': {
-        target: `https://${DEV_HOST}`,
+        target: `http://${DEV_HOST}`,
         changeOrigin: true,
       },
-      '/ws': {
-        target: `ws://${DEV_HOST}`,
-        changeOrigin: true,
-        ws: true,
-      },
+      // 临时注释 WebSocket 代理，避免连接失败导致进程崩溃
+      // '/ws': {
+      //   target: `ws://${DEV_HOST}`,
+      //   changeOrigin: true,
+      //   ws: true,
+      // },
     },
   },
   build: {

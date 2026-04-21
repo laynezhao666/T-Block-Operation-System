@@ -344,7 +344,12 @@ export default {
     },
 
     showSidebar() {
-      return this.aloneSideShow ? true : this.menuL2 && this.menuL2.length > 1;
+      if (this.aloneSideShow) return true;
+      if (!this.menuL2 || this.menuL2.length === 0) return false;
+      // 二级菜单多于1个时显示侧边栏
+      if (this.menuL2.length > 1) return true;
+      // 二级菜单只有1个，但其下有三级子菜单时也显示侧边栏
+      return this.menuL2[0] && this.menuL2[0].children && Object.keys(this.menuL2[0].children).length > 0;
     },
 
     oneIdActive() {
