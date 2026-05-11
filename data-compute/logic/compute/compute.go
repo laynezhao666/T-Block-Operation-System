@@ -229,7 +229,7 @@ func (d *computeApiImpl) calcChangedPoints(begin time.Time, wg *sync.WaitGroup) 
 	} else {
 		// 根据变化的测点，计算出需要计算的标准点
 		for pointName := range changedPoints {
-			if relateStrategies, ok := d.refPointStrategyMap[pointName]; !ok {
+			if relateStrategies, ok := d.refPointStrategyMap[pointName]; ok {
 				for _, strategy := range relateStrategies {
 					needCalcStrategyMap[strategy.stdPointName] = strategy
 				}

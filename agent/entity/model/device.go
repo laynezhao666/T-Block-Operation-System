@@ -18,13 +18,16 @@ type Device struct {
 	ChData                ChannelData              `json:"channel"`        // 通道数据
 	TemplateData          TemplateInfo             `json:"tpl"`            // 采集模板数据
 	MozuID                int                      `json:"mozu_id"`
+	Extend                string                   `json:"extend"` // 对应elvdb设备里的扩展参数
 	Extends               map[string]interface{}   `json:"extends"`
 	NeedReopen            bool                     // 是否需要重新打开
 	SubDevices            []Device                 `json:"sub_devices"` // 虚拟子设备（非直采设备）
 	StdVersion            string                   `json:"std_version"`
 	DevicesVersion        string                   `json:"devices_version"`
 	BelongCollectorDevice string                   `json:"belong_collector_device"`
+	BelongCollectorGid    string                   `json:"belong_collector_gid"`
 	CollectorType         int32                    `json:"collector_type"`
+	SN                    string                   `json:"sn"`
 }
 
 // Copy 复制设备数据
@@ -65,6 +68,10 @@ func (d *Device) GetDeviceInfo() DeviceInfo {
 			cmdInterval = consts.DefaultNetDeviceCmdIntervalMs
 		}
 	}
+	//else if d.ChData.CmdInterval > 200 {
+	//	// 特殊兼容，原版的间隔慢300ms，故对需要特别延迟的场景加300ms
+	//	cmdInterval += 300
+	//}
 	if d.ChData.WaitTimeMs == 0 {
 		waitTimeMs = consts.DefaultChannelDeviceWaitMs
 	}
@@ -78,7 +85,7 @@ func (d *Device) GetDeviceInfo() DeviceInfo {
 		Address:             d.ChData.Address,
 		ProtocolVersion:     d.ChData.ProtocolVersion,
 		Extends:             d.Extends,
-		ChannelExtend:       d.ChData.Extend,
+		ChannelExtend:       d.Extend, // 调整对应到elvdb设备里的扩展参数
 		Template:            d.TemplateData.GetFullTemplateName(),
 		CmdInterval:         cmdInterval,
 		WaitTimeMs:          waitTimeMs,

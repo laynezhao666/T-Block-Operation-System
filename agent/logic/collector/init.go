@@ -1,6 +1,7 @@
 package collector
 
 import (
+	model1 "agent/entity/model"
 	"agent/logic/cm"
 	"agent/logic/collector/device"
 	"agent/logic/collector/device/driver"
@@ -8,12 +9,14 @@ import (
 	"agent/logic/collector/device/model"
 	"agent/logic/collector/device/virtualpoints"
 	"agent/logic/collector/dispatcher"
+	"agent/logic/distribution/interval"
 	"agent/logic/plugin"
 	"agent/logic/std"
 	"runtime"
 	"sync"
 
 	"trpc.group/trpc-go/trpc-go/log"
+	elog "trpc.group/trpc-go/trpc-go/log"
 )
 
 var ch chan bool
@@ -39,9 +42,9 @@ func Init() error {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				stack := make([]byte, 102400)
+				stack := make([]byte, 4096)
 				length := runtime.Stack(stack, true)
-				log.Errorf("panic:%v,stack:%s",
+				elog.Errorf("panic:%v,stack:%s",
 					r, string(stack[:length]))
 			}
 		}()
@@ -50,13 +53,15 @@ func Init() error {
 			select {
 			case <-cm.WatchDeviceChanged():
 				log.Info("watch task changed!!!")
-				ReloadAll()
-			case <-cm.WatchStdConfigChangedChan():
-				log.Warn("watch std changed!!!")
-				ReloadStd()
-			case <-cm.WatchDeviceConfigChangedChan():
-				log.Warn("watch collect device changed!!!")
-				ReloadCollect()
+				ReloadAll(nil)
+			//case <-cm.WatchStdConfigChangedChan():
+			//	log.Warn("watch std changed!!!")
+			//	ReloadStd()
+			//case <-cm.WatchDeviceConfigChangedChan():
+			//	log.Warn("watch collect device changed!!!")
+			//	ReloadCollect()
+			case event := <-cm.WatchConfigVersionChange():
+				ReloadAll(event)
 			case <-ch:
 				return
 			}
@@ -67,11 +72,11 @@ func Init() error {
 }
 
 // ReloadAll 重新加载所有配置
-func ReloadAll() {
+func ReloadAll(event *model1.ConfigChangeEvent) {
 	updateMux.Lock()
 	defer updateMux.Unlock()
 	// 重新加载配置
-	if err := cm.ReInitWorker(); err != nil {
+	if err := cm.ReInitWorker(event); err != nil {
 		log.Warnf("ReInit cm worker failed, %v", err)
 		return
 	}
@@ -84,8 +89,12 @@ func ReloadAll() {
 		log.Errorf("Reload devices failed, %v", err)
 		return
 	}
+	// 重新加载上报模块配置
+	interval.CollectProcessorManager().ReloadAllDevice()
+	interval.StdProcessorManager().ReloadAllDevice()
+	// 重新调度插件
 	plugin.Manager().Notify(plugin.EventCollectConfigChange)
-	log.Warnf("all version change, reInit done!")
+	log.Warnf("version change, reInit done!")
 }
 
 // ReloadStd 重新加载标准点配置
@@ -93,7 +102,7 @@ func ReloadStd() {
 	updateMux.Lock()
 	defer updateMux.Unlock()
 	// 重新加载配置 todo 这里可以拆
-	if err := cm.ReInitWorker(); err != nil {
+	if err := cm.ReInitWorker(nil); err != nil {
 		log.Warnf("ReInit cm worker failed, %v", err)
 		return
 	}
@@ -102,6 +111,8 @@ func ReloadStd() {
 		log.Errorf("Reload std failed, %v", err)
 		return
 	}
+	// 重新加载上报模块配置
+	interval.StdProcessorManager().ReloadAllDevice()
 	log.Warnf("std version change, reInit std done!")
 }
 
@@ -110,7 +121,7 @@ func ReloadCollect() {
 	updateMux.Lock()
 	defer updateMux.Unlock()
 	// 重新加载配置 todo 这里可以拆
-	if err := cm.ReInitWorker(); err != nil {
+	if err := cm.ReInitWorker(nil); err != nil {
 		log.Warnf("ReInit cm worker failed, %v", err)
 		return
 	}
@@ -119,6 +130,8 @@ func ReloadCollect() {
 		log.Errorf("Reload devices failed, %v", err)
 		return
 	}
+	// 重新加载上报模块配置
+	interval.CollectProcessorManager().ReloadAllDevice()
 	log.Warnf("collect device version change, reInit device and tpls done!")
 }
 

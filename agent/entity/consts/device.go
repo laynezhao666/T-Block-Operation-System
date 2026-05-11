@@ -5,6 +5,9 @@ const (
 	DeviceIDDelta   = "1"
 )
 
+// DeviceIDEDC 采集器自身监控虚拟设备 ID
+const DeviceIDEDC = "EDC_1"
+
 const (
 	ValueBigEndian    = "big"
 	ValueLittleEndian = "little"

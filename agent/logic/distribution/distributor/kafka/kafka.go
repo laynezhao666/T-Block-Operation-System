@@ -93,7 +93,8 @@ func (k *kafkaDistributor) Distribute(data *model2.DataUnit, args ...interface{}
 
 	topic := k.getTopic(data.DeviceGid)
 
-	sendTime, interval := utils2.GetSendTimeAndInterval(args)
+	sendTime, interval, dataType := utils2.GetSendTimeAndInterval(args)
+	mozuID := utils2.GetMozuID(args)
 	isDefault := utils2.IsDefaultInterval(interval)
 
 	kData, kafkaDataList, err := utils2.ToKafkaData(data, interval, false)
@@ -115,7 +116,9 @@ func (k *kafkaDistributor) Distribute(data *model2.DataUnit, args ...interface{}
 			log.Errorf("kafkaDistributor.Distribute Marshal %+v error: %+v", kafkaData, err)
 			return
 		}
-		key := utils2.GetMessageKey(data.DeviceGid, sendTime.Unix(), interval)
+		// 计算当前消息的实际测点数
+		n := len(kafkaData.Points) + len(kafkaData.VirtualPoints)
+		key := utils2.GetMessageKey(data.DeviceGid, sendTime.Unix(), interval, dataType, n)
 		messageLen += len(b)
 		messages = append(messages, utils.KafkaMessage{
 			Topic: topic,
@@ -142,7 +145,7 @@ func (k *kafkaDistributor) Distribute(data *model2.DataUnit, args ...interface{}
 				"kafka Distribute data: %+v, args: %+v, error: %v, retry http...", data.DeviceGid, args, err,
 			)
 		}
-		retry(data, messages, kData, kafkaDataList, interval, shouldLog, isDefault)
+		retry(data, messages, kData, kafkaDataList, interval, shouldLog, isDefault, mozuID, dataType)
 	}
 
 	if shouldLog {
@@ -153,5 +156,5 @@ func (k *kafkaDistributor) Distribute(data *model2.DataUnit, args ...interface{}
 			data.DeviceGid,
 		)
 	}
-	kData.Report("kafka", interval)
+	kData.Report("kafka", interval, mozuID, dataType)
 }

@@ -69,6 +69,17 @@ func (id DataPointIDType) GetPointNo() string {
 	return ""
 }
 
+// GetPointGid 从point_id （1307381722815410277.AcBranchE_1）中获取 Gid(1307381722815410277)
+func (id DataPointIDType) GetPointGid() string {
+	if len(id) > 0 {
+		list := strings.Split(string(id), ".")
+		if len(list) > 0 {
+			return list[0]
+		}
+	}
+	return ""
+}
+
 // AddOne 增加一个
 func (gid DeviceGidType) AddOne() (DeviceGidType, error) {
 	intGid, _ := strconv.Atoi(string(gid))

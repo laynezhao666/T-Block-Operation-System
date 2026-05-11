@@ -24,6 +24,8 @@ type IDevicePointDao interface {
 	GetDeviceNumberByCollector(ctx context.Context, collectorNumber string) ([]string, error)
 	// GetCollectorDataVer 获取每个采集器下标准点的最新数据版本
 	GetCollectorDataVer(ctx context.Context, deviceNumber []string) (map[string]int64, error)
+	// GetDistinctCollector 获取模组内所有关联采集器
+	GetDistinctCollector(ctx context.Context, mozuId int32) ([]string, error)
 }
 
 // NewDevicePointDao 创建设备测点表相关操作类实例
@@ -130,4 +132,15 @@ func (t *devicePointDaoImpl) GetCollectorDataVer(ctx context.Context, deviceNumb
 	return lo.SliceToMap(res, func(item *model.DevicePoint) (string, int64) {
 		return item.BelongCollector, item.UpdateAt.Unix()
 	}), nil
+}
+
+func (t *devicePointDaoImpl) GetDistinctCollector(ctx context.Context, mozuId int32) ([]string, error) {
+	sql := t.db.WithContext(ctx).Model(&model.DevicePoint{}).
+		Select("distinct(belong_collector) as belong_collector").
+		Where("mozu_id = ?", mozuId)
+	res := make([]string, 0)
+	if err := sql.Find(&res).Error; err != nil {
+		return nil, err
+	}
+	return res, nil
 }

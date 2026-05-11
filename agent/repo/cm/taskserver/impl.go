@@ -1,25 +1,23 @@
 package taskserver
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
 	"agent/entity/consts"
 	"agent/entity/model"
 	model2 "agent/logic/collector/device/model"
 	"agent/repo/cm/utils"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"path/filepath"
 
 	cmdbPb "trpcprotocol/cmdb"
 
 	"trpc.group/trpc-go/trpc-go"
-	"trpc.group/trpc-go/trpc-go/client"
 	"trpc.group/trpc-go/trpc-go/log"
 )
 
 const (
 	paramNumberPerConfigFetch = 5
-	serviceName               = "idc-tbos-cmdb"
 )
 
 // ReadImpl 读取配置
@@ -32,7 +30,7 @@ type ReadImpl struct {
 func NewReadImpl(chConfigChanged chan bool) *ReadImpl {
 	r := &ReadImpl{
 		chConfigChanged: chConfigChanged,
-		cmdbProxy:       cmdbPb.NewConfigQueryClientProxy(client.WithServiceName(serviceName)),
+		cmdbProxy:       cmdbPb.NewConfigQueryClientProxy(),
 	}
 
 	// todo 注册task server watcher回调
@@ -40,14 +38,15 @@ func NewReadImpl(chConfigChanged chan bool) *ReadImpl {
 }
 
 // GetStdDevice 获取标准设备
-func (r *ReadImpl) GetStdDevice(stdMap map[string]bool) (*model.StdDeviceData, error) {
+func (r *ReadImpl) GetStdDevice(stdMap map[string]bool, deviceNums []string) (*model.StdDeviceData, error) {
 	stdDevice := &model.StdDeviceData{
-		StdDevices:     make([]model.StdDevice, 0),
-		StdDeviceMap:   make(map[string]model.StdDevice),
-		StdPoints:      make(map[string]model2.StdInstancePointsInfo),
-		ConciseCodeMap: make(map[string]string),
+		StdDevices:      make([]model.StdDevice, 0),
+		StdDeviceMap:    make(map[string]model.StdDevice),
+		StdPoints:       make(map[string]model2.StdInstancePointsInfo),
+		ConciseCodeMap:  make(map[string]string),
+		DeviceNumberMap: make(map[string]string),
 	}
-	deviceNums := utils.GetTargetDevice()
+	//deviceNums := utils.GetTargetDevice()
 	for _, deviceNum := range deviceNums {
 		req := &cmdbPb.ReqGetDeviceEntity{
 			BelongCollector: deviceNum,
@@ -84,13 +83,16 @@ func (r *ReadImpl) GetStdDevice(stdMap map[string]bool) (*model.StdDeviceData, e
 		codeMap, list := utils.GetConciseCodeMap(list)
 
 		// 写本地文件(目前没有按采集设备分组)
-		err = utils.SaveConfigListToDirFile(list, deviceNums)
+		err = utils.SaveConfigListToDirFile(nil, deviceNums)
 		if err != nil {
 			return nil, fmt.Errorf("save std device config to file fail: %v", err)
 		}
 		stdDevice.StdDevices = append(stdDevice.StdDevices, list...)
 		for _, d := range list {
 			stdDevice.StdDeviceMap[d.DeviceGid] = d
+			if d.DeviceNumber != "" {
+				stdDevice.DeviceNumberMap[d.DeviceNumber] = d.DeviceGid
+			}
 		}
 		for k, v := range codeMap {
 			stdDevice.ConciseCodeMap[k] = v
@@ -137,7 +139,7 @@ func (r *ReadImpl) GetCmdbVersion() (map[string]*model.ConfigVersion, error) {
 }
 
 // GetDevices 获取采集设备列表
-func (r *ReadImpl) GetDevices() ([]model.Device, []model.Device, map[string]any, error) {
+func (r *ReadImpl) GetDevices(devices []string) ([]model.Device, []model.Device, map[string]any, error) {
 	deviceMap := make(map[string]any, 0)
 	deviceNums := utils.GetTargetDevice()
 	totalCollectDevices := make([]model.Device, 0)
@@ -257,9 +259,8 @@ func (r *ReadImpl) GetTemplates(list []string) (map[string]any, error) {
 }
 
 // GetStdData 获取标准数据
-func (r *ReadImpl) GetStdData(configVersion map[string]*model.ConfigVersion) (*model.StdData, error) {
-	deviceNums := utils.GetTargetDevice()
-
+func (r *ReadImpl) GetStdData(configVersion map[string]*model.ConfigVersion, deviceNums []string) (*model.StdData, error) {
+	deviceNums = utils.GetTargetDevice()
 	stdMap := make(map[string]any, 0)
 	log.Infof("task count:%d, devices: %v", len(deviceNums), deviceNums)
 	std := new(model.StdData)

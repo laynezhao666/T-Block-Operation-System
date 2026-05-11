@@ -23,7 +23,11 @@ const MODULE_DEPLOY= JSON.stringify({
 module.exports = {
   common: {
     MODULE_DEPLOY,
-    SPLIT_DEPLOY_FLAG:JSON.stringify(process.env.SPLIT_DEPLOY_FLAG)
+    SPLIT_DEPLOY_FLAG:JSON.stringify(process.env.SPLIT_DEPLOY_FLAG),
+    // NFC 读卡器密钥配置（由部署环境注入，此处为默认值）
+    NFC_MF_OLD_KEY: JSON.stringify(process.env.NFC_MF_OLD_KEY || 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'),
+    NFC_MF_NEW_KEY: JSON.stringify(process.env.NFC_MF_NEW_KEY || 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'),
+    NFC_DF_KEY: JSON.stringify(process.env.NFC_DF_KEY || 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'),
   },
   dev: {
     // TNF_ENV_XXX: '"XXXX"',

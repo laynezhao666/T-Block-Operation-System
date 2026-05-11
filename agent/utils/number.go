@@ -65,3 +65,13 @@ func SubtractUint64(a, b uint64) uint64 {
 
 	return math.MaxUint64 - (b - a) + 1
 }
+
+// FirstNonZero 取第一个非零
+func FirstNonZero[T ~int](vals ...T) T {
+	for _, v := range vals {
+		if v != 0 {
+			return v
+		}
+	}
+	return 0
+}

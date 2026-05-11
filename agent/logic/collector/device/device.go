@@ -2,19 +2,21 @@
 package device
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"agent/entity/config"
 	"agent/logic/cm"
 	"agent/logic/collector/device/driver"
 	"agent/logic/logfile"
 	"agent/logic/plugin"
+	"agent/logic/std"
 	utils2 "agent/utils"
 	osal2 "agent/utils/osal"
+	"context"
+	"errors"
+	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -37,6 +39,12 @@ const (
 	MinTimeoutMs = 2000
 	// 首个可用通道索引更新时间
 	firstIndexUpdateTime = time.Second * 1
+
+	// 兼容老版本,原版注释如下:
+	// 空调方仓不需要执行根据子设备通讯中断置特殊值逻辑
+	// 空调方仓下的 IEAC 的 Comm 测点实际表示了 IEAC 及其它子设备的通讯状态
+	// 根因在于该测点定义不合理，但只能在程序中特殊处理
+	ignoreSubDeviceCommTemplateName = "空调方仓"
 )
 
 var (
@@ -87,6 +95,9 @@ type Device struct {
 	firstAvailableIndex                      *model.AvailableChannelIndex
 	p                                        model4.Processor
 
+	// 标记是否禁用根据子设备通讯中断置子设备其它测点特殊值逻辑
+	ignoreSubDeviceCommPlugin bool
+
 	// channel log
 	logFileName string
 	logFile     *os.File
@@ -96,21 +107,12 @@ type Device struct {
 
 // NewDevice 根据设备信息 Info 与模板协议 templateProtocol 创建新的采集设备
 func NewDevice(info model3.DeviceInfo, templateProtocol *TemplateProtocol) *Device {
-	attrs := map[string]string{
-		consts.AttrChannel:    info.ChannelID,
-		consts.AttrTemplate:   info.Template,
-		consts.AttrAContainer: utils2.GetHostName(),
-		consts.AttrDeviceName: info.Name,
-		consts.AttrDeviceGid:  string(info.Gid),
-		consts.Mozu:           cm.Worker().GetDeviceMozuID(info.Gid),
-		consts.MozuId:         cm.Worker().GetDeviceMozuID(info.Gid),
-	}
 	d := &Device{
 		Info:                          info,
 		driverDevice:                  nil,
 		sem:                           osal2.NewSemaphore(1),
 		templateProtocol:              templateProtocol,
-		virtualPoints:                 virtualpoints.NewVirtualPoints(info.Gid, attrs, info.Channels),
+		virtualPoints:                 virtualpoints.NewVirtualPoints(info.Gid, info.Channels),
 		packetIndex:                   0,
 		currentChannelIndex:           0,
 		nextChannelIndex:              0,
@@ -120,6 +122,8 @@ func NewDevice(info model3.DeviceInfo, templateProtocol *TemplateProtocol) *Devi
 		needProbeChannelCommunication: len(info.Channels) > 1,
 		firstAvailableIndex:           model.NewAvailableChannelIndex(),
 		p:                             nil,
+		ignoreSubDeviceCommPlugin: strings.Contains(templateProtocol.GetTemplateName(),
+			ignoreSubDeviceCommTemplateName),
 	}
 	d.driverDeviceForChannels = make([]driver.IDevice, d.channelNumber)
 
@@ -231,6 +235,7 @@ func (d *Device) doOpenChannelDriver() error {
 			PacketMaxPointCount: d.Info.PacketMaxPointCount,
 			ExtendKV:            d.Info.ChannelExtendKV,
 			DriverExtend:        d.Info.DriverExtend,
+			ChType:              d.Info.ChType,
 		}
 		if r := d.driverDeviceForChannels[i].Open(channelInfo,
 			d.templateProtocol.GetCollectPackets()); r != consts.QualityOk {
@@ -268,7 +273,13 @@ func (d *Device) DoRequestNext() bool {
 	d.clearPointsValue(currentPacket.Points)
 	reqStartTime := utils2.GetNowUTCTime()
 	if d.driverDevice == nil {
-		log.Error("d.driverDevice=nil, packet=%v", currentPacket)
+		key := filterLogKey{ChannelID: d.Info.ChannelID, Command: currentPacket.Command}
+		filterLog.Warnf(key, "d.driverDevice=nil, packet cmd=%v", currentPacket.Command)
+		// 仅当开关开启时，驱动设备为空也视为一次失败请求，更新通讯状态，
+		// 确保 Open 失败场景下 commste 测点能正确反映中断状态
+		if config.GetRB().IsDriverCommOptimizeEnable() {
+			d.virtualPoints.UpdateAfterOneRequestFinished(false, 0, 0, 0)
+		}
 		return false
 	}
 
@@ -295,7 +306,7 @@ func (d *Device) DoRequestNext() bool {
 		currentReqSuccess := quality == consts.QualityOk
 		d.virtualPoints.AddAndUpdateTimeoutNumber(quality == consts.QualityCmdRespTimeout)
 		currentPacket.UpdateStat(currentReqSuccess)
-		isInterrupted := d.virtualPoints.UpdateAfterOneRequestFinished(currentReqSuccess, len(currentPacket.Points),
+		isInterrupted = d.virtualPoints.UpdateAfterOneRequestFinished(currentReqSuccess, len(currentPacket.Points),
 			msgStat.SendCount, msgStat.SuccessCount)
 		if isInterrupted {
 			d.Infof("%v 通讯中断中, Qua=%v...", d.Info.Name, quality)
@@ -391,9 +402,73 @@ func (d *Device) calculatePointsValue(requestReturnCode consts.Quality, points m
 			dataPoints[i].Rtd.Val.Tms = currentTime
 			dataPoints[i].Rtd.Val.Qua = requestReturnCode
 		}
+		// 判断是否有需要处理的单测点表达式
+		dataPoints = d.procExpress(&dataPoints[i], dataPoints)
 	}
-	plugin.ProcessRtd(d.ID(), dataPoints, false)
+	// 如果是不需要分发的设备数据，直接返回
+	if !cm.Worker().NeedDistribute(d.ID(), definition.KafkaDataTypeCollector) {
+		log.Debugf("skip %v save", d.ID())
+		return
+	}
+	plugin.ProcessRtd(d.ID(), dataPoints, d.ignoreSubDeviceCommPlugin)
 	rtdb.SetDataPoints(dataPoints, true)
+}
+
+// procExpress 判断处理表达式计算的点
+func (d *Device) procExpress(info *model2.DataPoint, dataPoints model2.DataPoints) model2.DataPoints {
+	if d.templateProtocol == nil || len(d.templateProtocol.expressionPoints) == 0 || info == nil {
+		return dataPoints
+	}
+	pointNo := info.ID.GetPointNo()
+	if len(pointNo) == 0 {
+		return dataPoints
+	}
+	dstPoints, has := d.templateProtocol.expressionPoints[pointNo]
+	if !has {
+		return dataPoints
+	}
+	// 表达式计算
+	for _, dstPoint := range dstPoints {
+		val, qua, tms := calcVal(&info.Rtd.Val, &dstPoint)
+		tmp := model2.DataPoint{}
+		tmp.Rtd.Val.Pv = osal2.NewVariantWithValue(val)
+		tmp.Rtd.Val.Qua = qua
+		tmp.Rtd.Val.Tms = tms
+		tmp.Rtd.Virtual = false
+		tmp.ID = definition.GenerateDataPointID(d.Info.Gid, definition.PointIDType(dstPoint.DstPointNo))
+		tmp.DeviceGiD = d.Info.Gid
+		tmp.PointType = definition.CollectPointType
+		dataPoints = append(dataPoints, tmp)
+	}
+	return dataPoints
+}
+
+func calcVal(val *model2.RTValue, dstPoint *ExpressionInfo) (any, consts.Quality, int64) {
+	tms := int64(-1)
+	if val.Tms > tms {
+		tms = val.Tms
+	}
+	if tms <= 0 {
+		tms = utils2.GetNowUTCTimeStamp()
+	}
+	if !val.IsOK() {
+		return nil, val.Qua, tms
+	}
+	fv, err := val.Pv.AsFloat()
+	if err != nil {
+		return nil, consts.QualityValueTypeError, tms
+	}
+	parameters := map[string]any{
+		dstPoint.KeyName: float64(fv),
+	}
+	result, qua, err := std.ExprEval(dstPoint.Expr, parameters, dstPoint.ValuePrecision)
+	if err != nil {
+		log.Debugf("calcVal: info=%v, param=%v, err=%v", dstPoint, parameters, err)
+	}
+	if qua == consts.QualityOk && dstPoint.ValueType == "bool" {
+		result = utils2.TransString2BoolIntStr(result)
+	}
+	return result, qua, tms
 }
 
 // calculateAnalogValue 处理模拟量的缩放、偏移以及越界
@@ -509,7 +584,10 @@ func (d *Device) doDriverOpenDevice(channelIndex int) consts.Quality {
 	if d == nil {
 		return consts.QualityDriverOpenFailed
 	}
-	d.virtualPoints.Clear()
+	// 开关关闭时（默认），在 Open 前调用 Clear()（老逻辑）
+	if !config.GetRB().IsDriverCommOptimizeEnable() {
+		d.virtualPoints.Clear()
+	}
 
 	if d.driverDevice == nil {
 		driver := d.templateProtocol.GetDriver()
@@ -540,10 +618,18 @@ func (d *Device) doDriverOpenDevice(channelIndex int) consts.Quality {
 		PacketMaxPointCount: d.Info.PacketMaxPointCount,
 		ExtendKV:            d.Info.ChannelExtendKV,
 		DriverExtend:        d.Info.DriverExtend,
+		ChType:              d.Info.ChType,
 	}
 
 	d.logFileName = logfile.GetPacketLogPath(d.Info.ChannelID)
-	return d.driverDevice.Open(channelInfo, d.templateProtocol.GetCollectPackets())
+	r := d.driverDevice.Open(channelInfo, d.templateProtocol.GetCollectPackets())
+	if r == consts.QualityOk {
+		// 开关开启时，Open 成功后再清空统计数据，确保 Open 失败时 failedRequestCount 不会被误清零
+		if config.GetRB().IsDriverCommOptimizeEnable() {
+			d.virtualPoints.Clear()
+		}
+	}
+	return r
 }
 
 // Close 关闭采集设备
@@ -554,11 +640,23 @@ func (d *Device) Close() {
 	d.Infof("close device, stop collecting, channel: \"%v\", template: \"%v\"", d.CurrentChannelID(), d.TemplateName())
 	d.cancel()
 	d.closeDriverDevice()
+	d.closeChannelDriverDevices() // 关闭通道探测用的驱动设备
 	d.remove()
 	d.virtualPoints.Close()
 	d.logClose()
 	d.sem.Post()
 	d.wg.Wait()
+}
+
+// closeChannelDriverDevices 关闭所有通道驱动设备，避免资源泄露
+func (d *Device) closeChannelDriverDevices() {
+	for i := range d.driverDeviceForChannels {
+		if d.driverDeviceForChannels[i] != nil {
+			d.driverDeviceForChannels[i].Close()
+			d.driverDeviceForChannels[i] = nil
+		}
+	}
+	d.isChannelDriverOpenCalled = false
 }
 
 // closeDriverDevice 关闭驱动设备

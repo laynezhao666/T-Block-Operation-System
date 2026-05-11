@@ -1,3 +1,4 @@
+// Package http http北向
 package http
 
 import (
@@ -84,7 +85,8 @@ func (t *httpDistributor) Distribute(data *model2.DataUnit, args ...interface{})
 	if t == nil || data == nil || len(data.Points) == 0 || len(t.clients) == 0 {
 		return
 	}
-	_, interval := utils2.GetSendTimeAndInterval(args)
+	_, interval, dataType := utils2.GetSendTimeAndInterval(args)
+	mozuID := utils2.GetMozuID(args)
 
 	kData, kafkaDataList, err := utils2.ToKafkaData(data, interval, true)
 	if err != nil {
@@ -99,8 +101,12 @@ func (t *httpDistributor) Distribute(data *model2.DataUnit, args ...interface{})
 	var wg sync.WaitGroup
 	for _, kafkaData := range kafkaDataList {
 		t.mutex.RLock()
-		defer t.mutex.RUnlock()
+		clients := make([]*httpClient, 0, len(t.clients))
 		for _, cli := range t.clients {
+			clients = append(clients, cli)
+		}
+		t.mutex.RUnlock()
+		for _, cli := range clients {
 			wg.Add(1)
 			go func(wg *sync.WaitGroup, c *httpClient, kafkaData *utils2.KafkaData) {
 				defer wg.Done()
@@ -131,6 +137,6 @@ func (t *httpDistributor) Distribute(data *model2.DataUnit, args ...interface{})
 	if shouldLog {
 		kData.Log("http", data.DeviceGid, interval)
 	}
-	kData.Report("http", interval)
+	kData.Report("http", interval, mozuID, dataType)
 	wg.Wait()
 }

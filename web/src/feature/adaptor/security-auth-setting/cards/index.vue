@@ -149,7 +149,7 @@ export default {
         .selection({
           identity: row => row.card_no,
           oprs: [
-            'export', 
+            'export',
             'delete',
             () => import('./batch-update-valid-time.vue'),
           ],
@@ -214,10 +214,10 @@ export default {
         } else {
           // 重新授权时更新卡类型
           await this.updateCardType(row.card_no, row.card_type);
-          
+
           // 重新授权时更新访问组
           await this.updateCardAccess(row.card_no, row.access_groups, false);
-          
+
           // 更新卡片有效期
           if (row.card_type === 1) {
             // 临时卡：更新有效期
@@ -228,7 +228,7 @@ export default {
             // 永久卡：清除有效期（设置为0）
             await this.updateCardValidTime(row.card_no, 0);
           }
-          
+
           // 更新员工绑定
           if (row.staff?.id) {
             this.grantToStaff(row.card_no, row.staff?.id, false);
@@ -245,7 +245,7 @@ export default {
           // 抛出错误以阻止表单关闭，但不显示默认错误提示
           throw new Error('CARD_DUPLICATE');
         }
-        
+
         throw error;
       }
     },
@@ -355,13 +355,18 @@ export default {
         .map(ch => ch.charCodeAt(0).toString(16).padStart(2, '0'))
         .join('');
 
+      // NFC 读卡器密钥从环境变量获取，避免硬编码
+      const mfOldKey = process.env.NFC_MF_OLD_KEY;
+      const mfNewKey = process.env.NFC_MF_NEW_KEY;
+      const dfKey = process.env.NFC_DF_KEY;
+
       const requestData = {
         cmdID: String(Date.now()),
         para: {
-          paraMFOldKey: 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF',
-          paraMFNewKey: 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF',
+          paraMFOldKey: mfOldKey,
+          paraMFNewKey: mfNewKey,
           paraDFID: '02',
-          paraDFKey: 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF',
+          paraDFKey: dfKey,
           paraBin,
         },
       };

@@ -1,5 +1,3 @@
-const noDupeClassMember = require('./eslint/rules/no-dupe-class-members')
-
 module.exports = {
   "env": {
     "browser": true,
@@ -13,8 +11,7 @@ module.exports = {
   "plugins": [
     "html",
     "vue",
-    "babel",
-    "bug-overrides"
+    "babel"
   ],
   "parser": "vue-eslint-parser",
   "parserOptions": {
@@ -42,8 +39,7 @@ module.exports = {
     // "template-curly-spacing": "off",
     "no-extend-native": 0,
     "babel/no-unused-expressions": 1,
-    "no-dupe-class-members": 0,
-    "bug-overrides/no-dupe-class-members": 2
+    "no-dupe-class-members": 2
   },
   "globals": {
     "openDialog": true,

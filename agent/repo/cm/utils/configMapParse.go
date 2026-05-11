@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"encoding/json"
-	"fmt"
 	"agent/entity/config"
 	"agent/entity/model"
+	"encoding/json"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -52,8 +52,10 @@ type DeviceConfig struct {
 	ConcurrentNum         string         `json:"concurrent_num"`
 	MaxPointNum           string         `json:"max_point_num"`
 	ExtendParams          string         `json:"extend_params"`
+	Extend                string         `json:"extend"` // 对应elvdb设备配置里的扩展参数
 	IsInstantiation       string         `json:"is_instantiation"`
 	BelongCollectorDevice string         `json:"belong_collector_device"`
+	BelongCollectorGid    string         `json:"belong_collector_gid"`
 }
 
 // Channel 采集通道配置
@@ -106,14 +108,17 @@ func ParseCollectDeviceConfigMap(configMap map[string]any) ([]model.Device, []mo
 			log.Warnf("unmarshal device config err: %v", err)
 			continue
 		}
+		// 构建父子关系
 		switch conf.CollectorType {
-		case definition.CollectorDeviceTypeTBox:
+		case definition.CollectorDeviceTypeTBox, definition.CollectorDeviceTypeTOne:
 			tboxDeviceConfigs = append(tboxDeviceConfigs, conf)
 			for i := range conf.SubDevices {
 				conf.SubDevices[i].BelongCollectorDevice = taskDevice
+				conf.SubDevices[i].BelongCollectorGid = conf.DeviceGID
 				collectDeviceConfigs = append(collectDeviceConfigs, conf.SubDevices[i])
 			}
 		case definition.CollectorDeviceTypeVendor:
+			conf.BelongCollectorGid = conf.DeviceGID
 			conf.BelongCollectorDevice = taskDevice
 			collectDeviceConfigs = append(collectDeviceConfigs, conf)
 		default:
@@ -275,14 +280,15 @@ func removeQuotesAndConvert(match string) string {
 }
 
 // ParseStdDeviceConfigMap 从configMap解析标准设备配置
-func ParseStdDeviceConfigMap(configMap map[string]any) ([]model.StdDevice, error) {
+func ParseStdDeviceConfigMap(configMap map[string]any) ([]model.StdDevice, map[string][]model.StdDevice, error) {
 	if len(configMap) == 0 {
 		log.Warnf("std devices config not exist")
-		return nil, nil
+		return nil, nil, nil
 	}
-	// stdDevicesMap := make(map[string]model.StdDevice, len(configMap))
+	stdDevicesMap := make(map[string][]model.StdDevice, len(configMap))
 	stdDevicesList := []model.StdDevice{}
-	for _, info := range configMap {
+
+	for k, info := range configMap {
 		l := struct {
 			List []model.StdDevice `json:"list"`
 		}{}
@@ -297,8 +303,9 @@ func ParseStdDeviceConfigMap(configMap map[string]any) ([]model.StdDevice, error
 			continue
 		}
 		stdDevicesList = append(stdDevicesList, l.List...)
+		stdDevicesMap[k] = l.List
 	}
-	return stdDevicesList, nil
+	return stdDevicesList, stdDevicesMap, nil
 }
 
 // ParseCmdbVersionConfigMap 从configMap解析cmdb版本配置

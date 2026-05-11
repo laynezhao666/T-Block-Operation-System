@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sync"
 
 	model2 "agent/logic/collector/device/model"
 
@@ -17,11 +18,11 @@ import (
 	"trpc.group/trpc-go/trpc-go"
 	"trpc.group/trpc-go/trpc-go/client"
 	"trpc.group/trpc-go/trpc-go/log"
+	"trpc.group/trpc-go/trpc-go/naming/registry"
 )
 
 const (
 	paramNumberPerConfigFetch = 5
-	serviceName               = "idc-tbos-collector"
 )
 
 // ReadImpl 读取配置
@@ -34,20 +35,21 @@ type ReadImpl struct {
 func NewReadImpl(chConfigChanged chan bool) *ReadImpl {
 	r := &ReadImpl{
 		chConfigChanged: chConfigChanged,
-		tlinkProxy:      collectorPb.NewConfigBusClientProxy(client.WithServiceName(serviceName)),
+		tlinkProxy:      collectorPb.NewConfigBusClientProxy(),
 	}
 	return r
 }
 
 // GetStdDevice 获取标准设备
-func (r *ReadImpl) GetStdDevice(stdMap map[string]bool) (*model.StdDeviceData, error) {
+func (r *ReadImpl) GetStdDevice(stdMap map[string]bool, deviceNums []string) (*model.StdDeviceData, error) {
 	stdDevice := &model.StdDeviceData{
-		StdDevices:     make([]model.StdDevice, 0),
-		StdDeviceMap:   make(map[string]model.StdDevice),
-		StdPoints:      make(map[string]model2.StdInstancePointsInfo),
-		ConciseCodeMap: make(map[string]string),
+		StdDevices:      make([]model.StdDevice, 0),
+		StdDeviceMap:    make(map[string]model.StdDevice),
+		StdPoints:       make(map[string]model2.StdInstancePointsInfo),
+		ConciseCodeMap:  make(map[string]string),
+		DeviceNumberMap: make(map[string]string),
 	}
-	deviceNums := utils.GetTargetDevice()
+	//deviceNums := utils.GetTargetDevice()
 	for begin := 0; begin < len(deviceNums); begin += paramNumberPerConfigFetch {
 		end := begin + paramNumberPerConfigFetch
 		if end > len(deviceNums) {
@@ -75,7 +77,7 @@ func (r *ReadImpl) GetStdDevice(stdMap map[string]bool) (*model.StdDeviceData, e
 		if err != nil {
 			return nil, fmt.Errorf("unmarshal std device config map err: %v", err)
 		}
-		list, err := utils.ParseStdDeviceConfigMap(configMap)
+		list, stdDevicesMap, err := utils.ParseStdDeviceConfigMap(configMap)
 		if err != nil {
 			return nil, fmt.Errorf("tlink std device config: parse fail: %v", err)
 		}
@@ -84,14 +86,17 @@ func (r *ReadImpl) GetStdDevice(stdMap map[string]bool) (*model.StdDeviceData, e
 		// 获取短编号索引
 		codeMap, list := utils.GetConciseCodeMap(list)
 
-		// 写本地文件(目前没有按采集设备分组)
-		err = utils.SaveConfigListToDirFile(list, deviceNums)
+		// 写本地文件
+		err = utils.SaveConfigListToDirFile(stdDevicesMap, deviceNums)
 		if err != nil {
 			return nil, fmt.Errorf("save std device config to file fail: %v", err)
 		}
 		stdDevice.StdDevices = append(stdDevice.StdDevices, list...)
 		for _, d := range list {
 			stdDevice.StdDeviceMap[d.DeviceGid] = d
+			if d.DeviceNumber != "" {
+				stdDevice.DeviceNumberMap[d.DeviceNumber] = d.DeviceGid
+			}
 		}
 		for k, v := range codeMap {
 			stdDevice.ConciseCodeMap[k] = v
@@ -101,8 +106,7 @@ func (r *ReadImpl) GetStdDevice(stdMap map[string]bool) (*model.StdDeviceData, e
 }
 
 // GetDevices 获取采集设备列表
-func (r *ReadImpl) GetDevices() ([]model.Device, []model.Device, map[string]any, error) {
-	deviceNums := utils.GetTargetDevice()
+func (r *ReadImpl) GetDevices(deviceNums []string) ([]model.Device, []model.Device, map[string]any, error) {
 	totalCollectDevices := make([]model.Device, 0)
 	totalTboxDevices := make([]model.Device, 0)
 	deviceMap := make(map[string]any, 0)
@@ -223,51 +227,97 @@ func (r *ReadImpl) GetTemplates(list []string) (map[string]any, error) {
 	return rawTemplateMap, nil
 }
 
-// GetStdData 获取标准测点数据
-func (r *ReadImpl) GetStdData(configVersion map[string]*model.ConfigVersion) (*model.StdData, error) {
-	deviceNums := utils.GetTargetDevice()
+func (r *ReadImpl) GetStdData(configVersion map[string]*model.ConfigVersion, deviceNums []string) (
+	*model.StdData, error) {
+	if len(deviceNums) == 0 {
+		return &model.StdData{}, nil
+	}
 	log.Infof("task count:%d, devices: %v", len(deviceNums), deviceNums)
 
 	std := new(model.StdData)
-	stdMap := make(map[string]any, 0)
+	stdMap := make(map[string]any)
+	mu := sync.Mutex{}
+
+	type result struct {
+		configMap map[string]any
+		stdPoints *model2.StdInstancePointsInfo
+		err       error
+	}
+
+	const maxConcurrency = 10
+	sem := make(chan struct{}, maxConcurrency)
+
+	var wg sync.WaitGroup
+	resultsCh := make(chan result, (len(deviceNums)+paramNumberPerConfigFetch-1)/paramNumberPerConfigFetch)
+
 	for begin := 0; begin < len(deviceNums); begin += paramNumberPerConfigFetch {
 		end := begin + paramNumberPerConfigFetch
 		if end > len(deviceNums) {
 			end = len(deviceNums)
 		}
-		params, err := json.Marshal(deviceNums[begin:end])
-		if err != nil {
-			return nil, err
+		devicesBatch := deviceNums[begin:end]
+
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(devices []string) {
+			defer wg.Done()
+			defer func() { <-sem }()
+
+			params, err := json.Marshal(devices)
+			if err != nil {
+				resultsCh <- result{err: err}
+				return
+			}
+			req := &collectorPb.ReqFetchConfig{
+				Params:    params,
+				FetchType: collectorPb.ReqFetchConfig_FETCH_STD_POINTS,
+			}
+			ctx := trpc.BackgroundContext()
+			rsp, err := r.tlinkProxy.FetchConfig(ctx, req)
+			if err != nil {
+				log.ErrorContextf(ctx, "tlink std point config fetch fail: %v", err)
+				resultsCh <- result{err: err}
+				return
+			}
+			log.InfoContext(ctx, "fetch success")
+			data := rsp.GetData()
+			if data == nil {
+				resultsCh <- result{err: fmt.Errorf("std data nil, req devices: %v", devices)}
+				return
+			}
+			var configMap map[string]any
+			err = json.Unmarshal(data, &configMap)
+			if err != nil {
+				resultsCh <- result{err: fmt.Errorf("unmarshal std config map err: %v", err)}
+				return
+			}
+			stdPoints, err := utils.ParseStdPointConfigMap(configMap)
+			if err != nil {
+				resultsCh <- result{err: fmt.Errorf("tlink std point config: parse fail: %v", err)}
+				return
+			}
+			resultsCh <- result{configMap: configMap, stdPoints: stdPoints}
+		}(devicesBatch)
+	}
+
+	// 等待所有请求完成后关闭结果通道
+	go func() {
+		wg.Wait()
+		close(resultsCh)
+	}()
+
+	for res := range resultsCh {
+		if res.err != nil {
+			return nil, res.err
 		}
-		req := &collectorPb.ReqFetchConfig{
-			Params:    params,
-			FetchType: collectorPb.ReqFetchConfig_FETCH_COLLECTOR_POINTS,
-		}
-		ctx := trpc.BackgroundContext()
-		rsp, err := r.tlinkProxy.FetchConfig(ctx, req)
-		if err != nil {
-			log.ErrorContextf(ctx, "tlink std point config fetch fail: %v", err)
-			return nil, err
-		}
-		log.InfoContext(ctx, "fetch success")
-		data := rsp.GetData()
-		if data == nil {
-			return nil, fmt.Errorf("std data nil, req devices: %v", deviceNums[begin:end])
-		}
-		var configMap map[string]any
-		err = json.Unmarshal(data, &configMap)
-		if err != nil {
-			return nil, fmt.Errorf("unmarshal std config map err: %v", err)
-		}
-		for k, v := range configMap {
+		mu.Lock()
+		for k, v := range res.configMap {
 			stdMap[k] = v
 		}
-		stdPoints, err := utils.ParseStdPointConfigMap(configMap)
-		if err != nil {
-			return nil, fmt.Errorf("tlink std point config: parse fail: %v", err)
-		}
-		std.StdPointsInfo = append(std.StdPointsInfo, *stdPoints...)
+		std.StdPointsInfo = append(std.StdPointsInfo, *res.stdPoints...)
+		mu.Unlock()
 	}
+
 	log.Infof("tlink fetch ok: std point config; stdPoint count: %v", len(std.StdPointsInfo))
 	// 写本地文件
 	err := utils.SaveConfigMapToDirFileWithVersion(stdMap, consts.StdTag, configVersion)
@@ -290,11 +340,13 @@ func (r *ReadImpl) GetCmdbVersion() (map[string]*model.ConfigVersion, error) {
 		if err != nil {
 			return nil, err
 		}
+		node := &registry.Node{}
 		req := &collectorPb.ReqFetchConfig{
 			Params:    params,
 			FetchType: collectorPb.ReqFetchConfig_FETCH_CONFIG_MODIFY_TIME,
 		}
-		rsp, err := r.tlinkProxy.FetchConfig(trpc.BackgroundContext(), req)
+		rsp, err := r.tlinkProxy.FetchConfig(trpc.BackgroundContext(), req, client.WithSelectorNode(node))
+		log.Debugf("tlink fetch node:----------- %v", node)
 		if err != nil {
 			// log.Errorf("tlink cm version fetch fail: %v", err)
 			return nil, err
@@ -319,4 +371,17 @@ func (r *ReadImpl) GetCmdbVersion() (map[string]*model.ConfigVersion, error) {
 // WatchCallback 监听回调
 func (r *ReadImpl) WatchCallback() {
 	r.chConfigChanged <- true
+}
+
+// SnReadImpl 读取配置
+type SnReadImpl struct {
+	tlinkProxy collectorPb.ConfigBusClientProxy
+}
+
+// NewSnReadImpl 读取配置
+func NewSnReadImpl() *SnReadImpl {
+	r := &SnReadImpl{
+		tlinkProxy: collectorPb.NewConfigBusClientProxy(),
+	}
+	return r
 }

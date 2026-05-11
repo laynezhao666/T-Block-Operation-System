@@ -5,6 +5,7 @@ import (
 	"agent/entity/definition"
 	"agent/logic/cm"
 	"agent/logic/distribution/base"
+	"agent/logic/distribution/distributor"
 	"time"
 
 	"trpc.group/trpc-go/trpc-go/log"
@@ -43,23 +44,44 @@ func (m *StdIntervalManager) refreshStdPoints() {
 			return
 		}
 
-		// 获取所有设备
-		data := cm.Worker().GetStdData()
-		copyData := data.Copy()
-		if copyData == nil || len(copyData.StdPointsInfo) == 0 {
-			time.Sleep(definition.StdPointsRefreshTime)
-			continue
-		}
-
-		pointsID := make(definition.DataPointIDsType, 0, len(copyData.StdPointsInfo))
-		for _, v := range copyData.StdPointsInfo {
-			point := definition.DataPointIDType(v.StdDevice + consts.DefaultIDSep + v.StdPoint)
-			pointsID = append(pointsID, point)
-		}
-		m.defaultProcessor.SetPoints(definition.StdDevice, pointsID)
+		m.loadAllDevices()
 
 		time.Sleep(definition.StdPointsRefreshTime)
 	}
+}
+
+func (m *StdIntervalManager) loadAllDevices() {
+	// 获取所有设备
+	data := cm.Worker().GetStdData()
+	copyData := data.Copy()
+	if copyData == nil || len(copyData.StdPointsInfo) == 0 {
+		return
+	}
+
+	pointsID := make(definition.DataPointIDsType, 0, len(copyData.StdPointsInfo))
+	for _, v := range copyData.StdPointsInfo {
+		point := definition.DataPointIDType(v.StdDevice + consts.DefaultIDSep + v.StdPoint)
+		pointsID = append(pointsID, point)
+	}
+	m.defaultProcessor.SetPoints(definition.StdDevice, pointsID)
+}
+
+// ReloadAllDevice 重新加载全部设备
+func (m *StdIntervalManager) ReloadAllDevice() {
+	if m == nil {
+		return
+	}
+
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	m.defaultProcessor.ClearAllDevice()
+	for _, p := range m.intervalProcessors {
+		p.ClearAllDevice()
+	}
+	distributor.PointsDataManager().ClearAllDevice()
+
+	m.loadAllDevices()
 }
 
 // Start 启动

@@ -4,6 +4,7 @@ const (
 	Sep       = ";"
 	SepIPPort = ":"
 	SepKV     = "&"
+	SepExpr   = ","
 )
 
 const (

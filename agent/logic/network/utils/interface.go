@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"agent/entity/consts"
 	"agent/utils/osal"
 	"fmt"
 	"net"
@@ -14,7 +15,7 @@ import (
 )
 
 const (
-	backdoorIp = "" // tbox ETH1口后门ip
+	backdoorIp = "172.16.1.250" // tbox ETH1口后门ip
 )
 
 var (
@@ -40,6 +41,7 @@ var (
 	}
 )
 
+// FieldValue 字段值
 type FieldValue struct {
 	rawValue   string
 	wordNumber int
@@ -47,19 +49,48 @@ type FieldValue struct {
 	index      int
 }
 
+var (
+	// Version 版本号在编译时通过ldflags设置
+	Version = consts.Version
+	// GitCommit Git提交哈希
+	GitCommit = "undefined"
+	// GitBranch Git分支
+	GitBranch = "undefined"
+	// BuildTime 构建时间
+	BuildTime = "undefined"
+	// GoVersion Go版本
+	GoVersion = "undefined"
+	// hardwareVersion 硬件版本
+	hardwareVersion = ""
+)
+
+// Init 初始化
 func Init() {
 	blockReg, _ = regexp.Compile(`\s*(?s).+?(\n\s*?\n|$)`)
 	// 识别TBOX硬件版本，适配对应的网络接口名
 	context, err := os.ReadFile(tboxVersionFile)
 	if err == nil {
+		hardwareVersion = strings.TrimSpace(string(context))
 		// TBOX2.0的网口lan1，lan2，代替eth0, eth1
-		if strings.Contains(string(context), "TBOX-2") {
+		if strings.Contains(hardwareVersion, "TBOX-2") {
 			WlanInterface = "lan1"
 			LanInterface = "lan2"
 		}
 	}
 }
 
+// GetVersion 获取完整的版本信息
+func GetVersion() (string, map[string]string) {
+	return Version, map[string]string{
+		"branch":    GitBranch,
+		"commit":    GitCommit,
+		"buildTime": BuildTime,
+		"goVersion": GoVersion,
+		"hardware":  hardwareVersion,
+	}
+}
+
+// GetInterfaceStatus 获取网卡状态
 func GetInterfaceStatus(interfaceName string) (map[string]string, error) {
 	log.Debugf("get interface %v status", interfaceName)
 	ifData, err := net.InterfaceByName(interfaceName)
@@ -106,6 +137,7 @@ func GetInterfaceStatus(interfaceName string) (map[string]string, error) {
 	return data, nil
 }
 
+// GetInterfaceValues 获取网卡配置
 func GetInterfaceValues(interfaceName string, keys osal.Set[string]) (map[string]string, error) {
 	blocks, err := getBlocks()
 	if err != nil {
@@ -188,6 +220,7 @@ func convertToInterfaceFieldMap(conf map[string]string) map[string]string {
 	return newMap
 }
 
+// ModifyInterfaceConfig 修改网络配置
 func ModifyInterfaceConfig(wlanMap, lanMap map[string]string) error {
 	blocks, err := getBlocks()
 	if err != nil {
@@ -276,6 +309,7 @@ func updateInterfaceConfigure(fileContent string) error {
 	return nil
 }
 
+// RestartNetwork 重启网络
 func RestartNetwork() error {
 	cmd := exec.Command(networking, "restart")
 	return cmd.Run()

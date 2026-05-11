@@ -1,9 +1,9 @@
 package device
 
 import (
-	"encoding/json"
 	"agent/entity/config"
 	"agent/entity/consts"
+	"encoding/json"
 	"strings"
 
 	"trpc.group/trpc-go/trpc-go/log"
@@ -35,17 +35,29 @@ type TemplateProtocol struct {
 	listPackets model.ListCollectPackets
 	// 测点数量
 	pointCount int
+	// 记录模版里被引用来做表达式计算的测点,这里只支持单测点表达式
+	expressionPoints map[string][]ExpressionInfo
+}
+
+// ExpressionInfo 表达式信息
+type ExpressionInfo struct {
+	Expr           string // 表达式
+	KeyName        string // key名称
+	DstPointNo     string // 目标测点名
+	ValueType      string // 值类型
+	ValuePrecision string // 值精度
 }
 
 // NewTemplateProtocol 根据 templateName 生成新的模板协议
 func NewTemplateProtocol(templateName string) *TemplateProtocol {
 	return &TemplateProtocol{
-		templateName:   templateName,
-		driverInfo:     model.DriverInfo{},
-		collectPackets: make(MapCollectProtocolPacket),
-		controlPackets: make(MapControlProtocolPacket),
-		listPackets:    make(model.ListCollectPackets, 0, 10),
-		pointCount:     0,
+		templateName:     templateName,
+		driverInfo:       model.DriverInfo{},
+		collectPackets:   make(MapCollectProtocolPacket),
+		controlPackets:   make(MapControlProtocolPacket),
+		listPackets:      make(model.ListCollectPackets, 0, 10),
+		pointCount:       0,
+		expressionPoints: make(map[string][]ExpressionInfo),
 	}
 }
 
@@ -144,9 +156,39 @@ func (t *TemplateProtocol) parseDriverInfo(driverInfo model.DriverInfo) bool {
 
 // parsePointsInfo 解析所有测点信息，解析成功则返回 true，否则返回 false
 func (t *TemplateProtocol) parsePointsInfo(points model.InstancePointsInfo) bool {
+	pointNoSet := make(map[string]struct{})
+	calcPoints := make([]model.TemplateInstancePointInfo, 0)
 	for _, point := range points {
 		if !t.parsePointInfo(point) {
 			return false
+		}
+		// 没有开直接计算，则跳过后面的逻辑
+		if !config.GetRB().Task.Local.DirectCalc {
+			continue
+		}
+		// 如果不是表达式计算测点则记录PointNo,否则记录下来做进一步处理
+		if point.ProtocolDef.Command != model.CmdExpression {
+			pointNoSet[point.ID.GetPointNo()] = struct{}{}
+			continue
+		}
+		calcPoints = append(calcPoints, point)
+	}
+	for _, point := range calcPoints {
+		ok, srcPointNo, keyName := point.ExprDef.MatchDirectCalc(pointNoSet)
+		if ok {
+			info := ExpressionInfo{
+				Expr:           point.ExprDef.Expr,
+				KeyName:        keyName,
+				DstPointNo:     point.ID.GetPointNo(),
+				ValuePrecision: point.ExprDef.Precision,
+				ValueType:      point.ProtocolDef.Datatype,
+			}
+			// 添加到计算测点里
+			if array, has := t.expressionPoints[srcPointNo]; has {
+				t.expressionPoints[srcPointNo] = append(array, info)
+			} else {
+				t.expressionPoints[srcPointNo] = []ExpressionInfo{info}
+			}
 		}
 	}
 	return true
@@ -178,9 +220,17 @@ func (t *TemplateProtocol) parsePointInfo(point model.TemplateInstancePointInfo)
 		return false
 	}
 
-	valParser := t.createValParser(point)
-	if valParser == nil {
-		return false
+	// 表达式计算点由 expressionCmdPlugin 负责计算，不需要驱动解析器
+	var valParser interface{}
+	if point.ProtocolDef.Command == model.CmdExpression {
+		log.Debugf("skip valParser for expression point: pointID=%s, expr=%s",
+			point.ID, point.ExprDef.Expr)
+	} else {
+		valParser = t.createValParser(point)
+		if valParser == nil {
+			log.Warnf("valParser is nil: pointID=%s, point=%+v", point.ID, point)
+			return false
+		}
 	}
 
 	pointInfo := model.PointInfo{
@@ -192,12 +242,18 @@ func (t *TemplateProtocol) parsePointInfo(point model.TemplateInstancePointInfo)
 		},
 		RtVal: model2.NewRTValue(),
 	}
+	log.Debugf("load point: %+v, %+v", pointInfo, point.ProtocolDef)
 
 	cmd := point.ProtocolDef.Command
-	// 默认所有测点均具有读权限
+	access := strings.ToUpper(point.Access)
+	// 只有写属性的测点只加到控制点
+	if model.AccessWrite == access {
+		t.addControlPoint(cmd, &pointInfo)
+		return true
+	}
 	t.addCollectPoint(cmd, &pointInfo)
 	// 加入具有写权限的测点
-	if rw := strings.ToUpper(point.Access); strings.Index(rw, model.AccessWrite) >= 0 {
+	if strings.Index(access, model.AccessWrite) >= 0 {
 		t.addControlPoint(cmd, &pointInfo)
 	}
 	return true
@@ -252,6 +308,7 @@ func (t *TemplateProtocol) createValParser(point model.TemplateInstancePointInfo
 	}
 
 	valParams := &model.ValParseParams{
+		PointID:   string(point.ID),
 		DataAddr:  reg,
 		DataType:  protocolDef.Datatype,
 		ByteOrder: protocolDef.Byteorder,

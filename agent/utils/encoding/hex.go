@@ -13,3 +13,19 @@ func ParseBytesToHex(data []byte) string {
 	}
 	return strings.Join(hexParts, " ")
 }
+
+// HexSp hex sp
+func HexSp(b []byte) string {
+	const h = "0123456789ABCDEF"
+	if len(b) == 0 {
+		return ""
+	}
+	out := make([]byte, 0, len(b)*3)
+	for i, v := range b {
+		if i > 0 {
+			out = append(out, ' ')
+		}
+		out = append(out, h[v>>4], h[v&0x0F])
+	}
+	return string(out)
+}

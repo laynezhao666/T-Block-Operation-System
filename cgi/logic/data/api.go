@@ -234,7 +234,7 @@ func (d dataApiImpl) GetCollectorPointInfo(ctx context.Context, mozuId int32, co
 		switch collectorDevice.CollectorType {
 		case model.CollectorTypeTbox, model.CollectorTypeVendorBox:
 			continue
-		case model.CollectorTypeTboxSubDevice:
+		case model.CollectorTypeTboxSubDevice, model.CollectorTypeToneSubDevice:
 			collectorConds = append(collectorConds, []string{templateName, "", pointName})
 		case model.CollectorTypeVendorSubDevice:
 			collectorConds = append(collectorConds, []string{templateName, collectorDevice.DeviceCode, pointName})
@@ -259,10 +259,10 @@ func (d dataApiImpl) GetCollectorPointInfo(ctx context.Context, mozuId int32, co
 		}
 		templateName := collectorTemplateMap[collectorGid].TemplateName
 		switch collectorDevice.CollectorType {
-		case model.CollectorTypeTbox, model.CollectorTypeVendorBox:
+		case model.CollectorTypeTbox, model.CollectorTypeVendorBox, model.CollectorTypeTone:
 			res[pointKey] = &collectorPointInfo{collector: collectorDevice}
 			continue
-		case model.CollectorTypeTboxSubDevice:
+		case model.CollectorTypeTboxSubDevice, model.CollectorTypeToneSubDevice:
 			infoKey := strings.Join([]string{templateName, "", pointName}, "|")
 			res[pointKey] = &collectorPointInfo{collector: collectorDevice, point: templatePointMap[infoKey]}
 		case model.CollectorTypeVendorSubDevice:

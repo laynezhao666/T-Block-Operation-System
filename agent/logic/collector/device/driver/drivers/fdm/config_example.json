@@ -1,0 +1,117 @@
+{
+  "fdm_driver_configuration_examples": {
+    "description": "FDM气体探测器驱动配置示例",
+
+    "protocol_info": {
+      "interface": "RS232/RS485",
+      "baudrate": 9600,
+      "databits": 8,
+      "stopbits": 1,
+      "parity": "N",
+      "communication_mode": "问答方式，上位机发送命令后等待下位机响应"
+    },
+
+    "channel_configuration": {
+      "description": "通道配置示例",
+      "serial_port_example": {
+        "name": "/dev/ttyUSB0",
+        "params": "9600:N:8:1",
+        "address": "16",
+        "protocol_ver": "FDM",
+        "timeout_ms": 2000,
+        "driver_extend": "{\"read_timeout\":2000,\"read_retries\":3,\"share_transport\":false}"
+      }
+    },
+
+    "driver_extend_options": {
+      "read_timeout": "读取超时时间(毫秒)，默认2000",
+      "read_retries": "重试次数，默认3",
+      "share_transport": "是否共享串口传输，默认false"
+    },
+
+    "data_point_configuration": {
+      "description": "测点配置示例",
+      "data_addr_format": "设备地址 或 设备地址:功能码",
+      "examples": [
+        {
+          "name": "气体浓度",
+          "data_addr": "16",
+          "explanation": "设备地址16，默认读气体浓度(功能码4)"
+        },
+        {
+          "name": "气体浓度(完整格式)",
+          "data_addr": "16:4",
+          "explanation": "设备地址16，功能码4(读气体浓度)"
+        },
+        {
+          "name": "探头内部温度",
+          "data_addr": "16:8",
+          "explanation": "设备地址16，功能码8(读探头内部温度)"
+        },
+        {
+          "name": "第一报警点值",
+          "data_addr": "16:16",
+          "explanation": "设备地址16，功能码16(读第一报警点值)"
+        },
+        {
+          "name": "第二报警点数值",
+          "data_addr": "16:12",
+          "explanation": "设备地址16，功能码12(读第二报警点数值)"
+        },
+        {
+          "name": "满量程值",
+          "data_addr": "16:32",
+          "explanation": "设备地址16，功能码32(读满量程值)"
+        },
+        {
+          "name": "小数点位数",
+          "data_addr": "16:80",
+          "explanation": "设备地址16，功能码80(读小数点位数)"
+        }
+      ]
+    },
+
+    "function_codes": {
+      "4": "读气体浓度",
+      "8": "读探头内部温度",
+      "12": "读第二报警点数值",
+      "16": "读第一报警点值",
+      "32": "满量程值",
+      "80": "小数点位数",
+      "note": "目前只开放读气体浓度，其他功能码可能为锁定状态"
+    },
+
+    "protocol_packet_format": {
+      "request": {
+        "description": "上位机发送数据格式",
+        "format": "起始符(1) + 地址(2) + 功能码1(2) + 功能码2(4) + 字节长度(2) + 校验码(2) + 结束符(1)",
+        "example": {
+          "hex": "40 30 31 30 38 30 30 30 34 30 34 30 39 0D",
+          "explanation": "@ 01 08 0004 04 09 CR - 地址1，读气体浓度"
+        }
+      },
+      "response": {
+        "description": "下位机返回数据格式",
+        "format": "起始符(1) + 地址(2) + 字节长度(2) + 数据区(8) + 校验码(2) + 结束符(1)",
+        "example": {
+          "hex": "40 30 31 30 34 30 30 30 30 30 30 30 30 30 35 0D",
+          "explanation": "@ 01 04 00000000 05 CR - 地址1，气体浓度0ppm"
+        }
+      }
+    },
+
+    "data_format": {
+      "description": "浮点数数据格式说明",
+      "byte1": "D7=数符(0正1负), D6=阶符(0正1负), D5-D0=阶码",
+      "byte2_3_4": "小数部分",
+      "formula": "数值 = ((((A4/256)+A3)/256)+A2)/256 × 2^阶码 × (-1)^数符"
+    },
+
+    "notes": [
+      "设备出厂地址默认为16",
+      "目前只开放读气体浓度功能，写功能为锁定状态",
+      "通信超时建议设置为1-2秒",
+      "如果多次通信失败，驱动会返回通信中断，上层会重新连接"
+    ]
+  }
+}

@@ -107,7 +107,7 @@ type VirtualPoints struct {
 }
 
 // NewVirtualPoints 初始化虚拟测点
-func NewVirtualPoints(deviceGiD definition.DeviceGidType, deviceAttrs map[string]string,
+func NewVirtualPoints(deviceGiD definition.DeviceGidType,
 	channels []devicemodel.Channel) *VirtualPoints {
 	v := &VirtualPoints{
 		pointThroughputPoint:              model.NewVirtualDataPoint(deviceGiD, definition.GeneratePointThroughputID(deviceGiD)),
@@ -137,18 +137,6 @@ func NewVirtualPoints(deviceGiD definition.DeviceGidType, deviceAttrs map[string
 	for i := 0; i < channelNumber; i++ {
 		v.channelCommPoints = append(v.channelCommPoints,
 			model.NewVirtualDataPoint(deviceGiD, definition.GenerateChannelCommID(deviceGiD, i)))
-	}
-
-	v.deviceAttrList = getAttrList(deviceAttrs)
-
-	channelChannelAttrs := make(map[string]string, len(deviceAttrs))
-	for k, v := range deviceAttrs {
-		channelChannelAttrs[k] = v
-	}
-	v.channelAttrList = make([][]*metrics.Dimension, channelNumber)
-	for i := 0; i < channelNumber; i++ {
-		channelChannelAttrs[consts.AttrChannel] = channels[i].Name
-		v.channelAttrList[i] = getAttrList(channelChannelAttrs)
 	}
 
 	v.c = cron.New(cron.WithSeconds())

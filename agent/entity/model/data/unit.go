@@ -7,7 +7,8 @@ import (
 
 // DataUnit 数据分发单元
 type DataUnit struct {
-	DeviceGid definition.DeviceGidType `json:"id"`
+	DeviceGid  definition.DeviceGidType   `json:"id"`
+	DeviceGids []definition.DeviceGidType `json:"device_gids,omitempty"`
 	// 测点数据
 	Points model.DataPoints `json:"points"`
 }

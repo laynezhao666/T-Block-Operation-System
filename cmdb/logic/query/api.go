@@ -113,16 +113,26 @@ func (c *configQueryApiImpl) watchCollectorVer() {
 		log.InfoContextf(ctx, "watch collector ver: mozu_id:[%d] ver change", mozu.MozuId)
 		c.mozuVerCache[mozu.MozuId] = mozu
 		collectors, _, err := c.collectorDeviceDao.GetList(ctx, &cond.ListCollectorDeviceCond{
-			CollectorType: []int32{model.CollectorTypeTbox, model.CollectorTypeVendorBox},
-			MozuId:        []int32{mozu.MozuId},
+			CollectorType: []int32{model.CollectorTypeTbox, model.CollectorTypeVendorBox,
+				model.CollectorTypeDoor, model.CollectorTypeTone},
+			MozuId: []int32{mozu.MozuId},
 		})
 		if err != nil {
 			log.AlarmContextf(ctx, "watch collector ver: get collector of mozu_id:[%d] fail, err:%v",
 				mozu.MozuId, err)
 			continue
 		}
+		pointCollectors, err := c.devicePointDao.GetDistinctCollector(ctx, mozu.MozuId)
+		if err != nil {
+			log.AlarmContextf(ctx, "watch collector ver: get point collector of mozu_id:[%d] fail, err:%v",
+				mozu.MozuId, err)
+			continue
+		}
 		for _, collector := range collectors {
 			c.collectorVerChange.Store(collector.DeviceNumber, struct{}{})
+		}
+		for _, belongCollector := range pointCollectors {
+			c.collectorVerChange.Store(belongCollector, struct{}{})
 		}
 	}
 }
@@ -132,8 +142,9 @@ func (c *configQueryApiImpl) GetCollectorDevice(ctx context.Context, deviceNumbe
 	*cmdb.RspGetCollectorDevice, error) {
 	// 1、初始化返回信息
 	majorDevices, _, err := c.collectorDeviceDao.GetList(ctx, &cond.ListCollectorDeviceCond{
-		DeviceNumber:  deviceNumbers,
-		CollectorType: []int32{model.CollectorTypeTbox, model.CollectorTypeVendorBox},
+		DeviceNumber: deviceNumbers,
+		CollectorType: []int32{model.CollectorTypeTbox, model.CollectorTypeVendorBox,
+			model.CollectorTypeDoor, model.CollectorTypeTone},
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "get collector box list fail")
@@ -321,12 +332,12 @@ func (c *configQueryApiImpl) ExportCollectorConfig(ctx context.Context, req *cmd
 		// 拿到采集设备关联的采集模版
 		templateNames := make([]string, 0)
 		if collectorInfo, ok := collectorDeviceRsp.ConfigMap[device.DeviceNumber]; ok {
-			if collectorInfo.CollectorType == model.CollectorTypeTbox {
+			if collectorInfo.CollectorType == model.CollectorTypeVendorBox {
+				templateNames = append(templateNames, (collectorInfo.Tpl.AsMap()["tplnm"]).(string))
+			} else {
 				for _, subDevice := range collectorInfo.SubDevices {
 					templateNames = append(templateNames, (subDevice.Tpl.AsMap()["tplnm"]).(string))
 				}
-			} else {
-				templateNames = append(templateNames, (collectorInfo.Tpl.AsMap()["tplnm"]).(string))
 			}
 		}
 		stdDeviceRsp, err := c.GetDeviceEntity(ctx, &cmdb.ReqGetDeviceEntity{BelongCollector: device.DeviceNumber})

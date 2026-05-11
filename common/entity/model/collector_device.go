@@ -10,6 +10,10 @@ const (
 	CollectorTypeTboxSubDevice   = 2 //  TBOX下子设备
 	CollectorTypeVendorBox       = 3 // 厂商采集器
 	CollectorTypeVendorSubDevice = 4 // 厂商下子设备
+	CollectorTypeDoor            = 5 // 门禁采集器
+	CollectorTypeDoorSubDevice   = 6 // 门禁下子设备
+	CollectorTypeTone            = 7 // TONE采集器
+	CollectorTypeToneSubDevice   = 8 // TONE下子设备
 )
 
 // CollectorDevice  采集设备
@@ -22,7 +26,7 @@ type CollectorDevice struct {
 	DeviceName         string    `gorm:"column:device_name;type:varchar(127);comment:设备名称;not null;" json:"device_name"`                                // 设备名称
 	DeviceTypeEn       string    `gorm:"column:device_type_en;type:varchar(127);comment:采集设备类型英文;not null;" json:"device_type_en"`                      // 采集设备类型英文
 	DeviceTypeZh       string    `gorm:"column:device_type_zh;type:varchar(127);comment:采集设备类型中文;not null;" json:"device_type_zh"`                      // 采集设备类型中文
-	CollectorType      int32     `gorm:"column:collector_type;type:tinyint(4);comment:采集类型;not null;default:0;" json:"collector_type"`                  // 采集类型,1:Tbox,2: Tbox下子设备，3：厂商采集器，4：厂商采集器子设备
+	CollectorType      int32     `gorm:"column:collector_type;type:tinyint(4);comment:采集类型;not null;default:0;" json:"collector_type"`                  // 采集类型,1:Tbox,2: Tbox下子设备，3：厂商采集器，4：厂商采集器子设备，5：门禁采集器，6：门禁下子设备，7：TONE采集器，8：TONE下子设备
 	ChannelType        string    `gorm:"column:channel_type;type:varchar(16);comment:通道类型;" json:"channel_type"`                                        // 通道类型
 	ChannelId          string    `gorm:"column:channel_id;type:varchar(127);comment:通道地址;" json:"channel_id"`                                           // 通道地址
 	ChannelLink        string    `gorm:"column:channel_link;type:text;comment:通道详细信息;" json:"channel_link"`                                             // 通道详细信息

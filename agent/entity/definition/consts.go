@@ -41,6 +41,11 @@ const (
 	CollectorDeviceTypeTBoxSub   = 2
 	CollectorDeviceTypeVendor    = 3
 	CollectorDeviceTypeVendorSub = 4
+	CollectorDeviceTypeTOne      = 7
 
 	ChannelTypeSerial = "serial"
+
+	KafkaDataTypeCollector = 1
+	KafkaDataTypeStd       = 2
+	KafkaDataTypeVirtual   = 3
 )

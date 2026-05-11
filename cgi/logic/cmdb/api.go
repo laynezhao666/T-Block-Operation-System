@@ -10,6 +10,7 @@ import (
 	"context"
 	"etrpc-go/util/copyutil"
 	"fmt"
+	"sort"
 	"strings"
 	pb "trpcprotocol/cgi"
 	idc_tbos_data_cache "trpcprotocol/data-cache"
@@ -347,10 +348,15 @@ func (obj *cmdbApi) GetMozuInfo(ctx context.Context, req *pb.ReqGetMozuInfo) (*p
 func (obj *cmdbApi) GetCollectorStatusTree(ctx context.Context, req *pb.ReqGetCollectorStatusTree) (*pb.RspGetCollectorStatusTree, error) {
 	// 构建查询条件查询所有相关的采集设备
 	condDao := &dto.CondCollectorGetDeviceList{}
-	if req.CollectorType == model.CollectorTypeTbox {
+	switch req.CollectorType {
+	case model.CollectorTypeTbox:
 		condDao.CollectorType = []int32{model.CollectorTypeTbox, model.CollectorTypeTboxSubDevice}
-	} else if req.CollectorType == model.CollectorTypeVendorBox {
+	case model.CollectorTypeVendorBox:
 		condDao.CollectorType = []int32{model.CollectorTypeVendorBox, model.CollectorTypeVendorSubDevice}
+	case model.CollectorTypeDoor:
+		condDao.CollectorType = []int32{model.CollectorTypeDoor, model.CollectorTypeDoorSubDevice}
+	case model.CollectorTypeTone:
+		condDao.CollectorType = []int32{model.CollectorTypeTone, model.CollectorTypeToneSubDevice}
 	}
 	collectorDevices, _ := obj.collectorDao.GetDeviceList(req.MozuId, condDao)
 	// 组装设备树
@@ -374,14 +380,18 @@ func (obj *cmdbApi) GetCollectorStatusTree(ctx context.Context, req *pb.ReqGetCo
 		if item.ParentDeviceNumber == "" {
 			collectorNodes = append(collectorNodes, nodeMap[item.DeviceNumber])
 		} else {
-			nodeMap[item.ParentDeviceNumber].Children =
-				append(nodeMap[item.ParentDeviceNumber].Children, nodeMap[item.DeviceNumber])
+			if node, ok := nodeMap[item.ParentDeviceNumber]; ok {
+				node.Children = append(node.Children, nodeMap[item.DeviceNumber])
+			}
 		}
 	}
 	// 填充设备树节点的子节点数量
 	for _, node := range nodeMap {
 		node.DeviceCount = int32(len(node.Children))
 	}
+	sort.Slice(collectorNodes, func(i, j int) bool {
+		return collectorNodes[i].DeviceNumber < collectorNodes[j].DeviceNumber
+	})
 	rsp := &pb.RspGetCollectorStatusTree{
 		DeviceGid:   fmt.Sprint(req.MozuId),
 		Children:    collectorNodes,
@@ -412,7 +422,10 @@ func (obj *cmdbApi) GetCollectorInfo(ctx context.Context, req *pb.ReqGetCollecto
 	rsp.StatusId = getCollectorStatusKey(collector)
 
 	// 如果是Tbox采集器或者厂商采集器,则获取子设备信息
-	if collector.CollectorType == model.CollectorTypeTbox || collector.CollectorType == model.CollectorTypeVendorBox {
+	if collector.CollectorType == model.CollectorTypeTbox ||
+		collector.CollectorType == model.CollectorTypeVendorBox ||
+		collector.CollectorType == model.CollectorTypeDoor ||
+		collector.CollectorType == model.CollectorTypeTone {
 		subDevices, _ := obj.collectorDao.GetDeviceList(req.MozuId, &dto.CondCollectorGetDeviceList{
 			ParentDeviceNumber: []string{collector.DeviceNumber},
 		})
@@ -483,7 +496,7 @@ func (obj *cmdbApi) GetCollectorPoint(ctx context.Context, req *pb.ReqGetCollect
 	points := make([]*model.CollectorTemplatePoint, 0)
 	var err error
 	switch collector.CollectorType {
-	case model.CollectorTypeTboxSubDevice:
+	case model.CollectorTypeTboxSubDevice, model.CollectorTypeToneSubDevice, model.CollectorTypeDoorSubDevice:
 		points, err = obj.collectorDao.GetTemplatePoint(ctx, collector.TemplateName, "")
 		if err != nil {
 			return nil, fmt.Errorf("get template point fail, err:%v", err)

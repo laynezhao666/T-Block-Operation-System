@@ -1,14 +1,14 @@
 package localfile
 
 import (
-	"encoding/json"
-	"fmt"
 	"agent/entity/config"
 	"agent/entity/consts"
 	"agent/entity/model"
 	model3 "agent/logic/collector/device/model"
 	"agent/repo/cm/utils"
 	"agent/utils/file/io"
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -36,7 +36,7 @@ type Data struct {
 }
 
 // GetStdDevice 获取标准设备
-func (r *ReadImpl) GetStdDevice(stdMap map[string]bool) (*model.StdDeviceData, error) {
+func (r *ReadImpl) GetStdDevice(stdMap map[string]bool, deviceNums []string) (*model.StdDeviceData, error) {
 	var jsonData JSONData
 	data, err := os.ReadFile(config.GetRB().GetProjectLocalPath() + "/" + consts.StdDeviceFile)
 	if err != nil {
@@ -52,12 +52,16 @@ func (r *ReadImpl) GetStdDevice(stdMap map[string]bool) (*model.StdDeviceData, e
 	// 获取短编号索引
 	codeMap, list := utils.GetConciseCodeMap(list)
 	stdDevice := &model.StdDeviceData{
-		StdDevices:   make([]model.StdDevice, 0),
-		StdDeviceMap: make(map[string]model.StdDevice),
-		StdPoints:    make(map[string]model3.StdInstancePointsInfo),
+		StdDevices:      make([]model.StdDevice, 0),
+		StdDeviceMap:    make(map[string]model.StdDevice),
+		StdPoints:       make(map[string]model3.StdInstancePointsInfo),
+		DeviceNumberMap: make(map[string]string),
 	}
 	for _, d := range list {
 		stdDevice.StdDeviceMap[d.DeviceGid] = d
+		if d.DeviceNumber != "" {
+			stdDevice.DeviceNumberMap[d.DeviceNumber] = d.DeviceGid
+		}
 	}
 	stdDevice.StdDevices = list
 	stdDevice.ConciseCodeMap = codeMap
@@ -78,7 +82,7 @@ func NewReadImpl(chConfigChanged chan bool) *ReadImpl {
 }
 
 // GetDevices 获取设备
-func (r *ReadImpl) GetDevices() ([]model.Device, []model.Device, map[string]any, error) {
+func (r *ReadImpl) GetDevices(devices []string) ([]model.Device, []model.Device, map[string]any, error) {
 	var rsp utils.Response
 	deviceMap := make(map[string]any, 0)
 	rsp, err := getLatestFileData(consts.DeviceTag)
@@ -135,7 +139,7 @@ func (r *ReadImpl) GetTemplates(list []string) (map[string]any, error) {
 }
 
 // GetStdData 获取标准数据
-func (r *ReadImpl) GetStdData(_ map[string]*model.ConfigVersion) (*model.StdData, error) {
+func (r *ReadImpl) GetStdData(_ map[string]*model.ConfigVersion, deviceNums []string) (*model.StdData, error) {
 	// 读取文件
 	rsp, err := getLatestFileData(consts.StdTag)
 	if err != nil {
@@ -172,27 +176,47 @@ func getLatestFileData(configType string) (utils.Response, error) {
 		return rsp, fmt.Errorf("no %s*.json files found", configType)
 	}
 
-	// 正则表达式匹配文件名中的时间戳
-	re := regexp.MustCompile(configType + `@(\d+)\.json`)
-	var maxTimestamp int64 = -1
 	// 兼容没有时间戳的情况
 	targetFile := files[0]
 
-	// 遍历所有匹配的文件，找到时间戳最大的文件
-	for _, file := range files {
-		matches := re.FindStringSubmatch(file)
-		if len(matches) == 2 { // 匹配成功
-			timestamp, err := strconv.ParseInt(matches[1], 10, 64)
-			if err != nil {
-				log.Warnf("invalid timestamp in filename %s: %v", file, err)
-				continue
-			}
+	// 正则表达式适配新格式：时间戳-序列号
+	re := regexp.MustCompile(regexp.QuoteMeta(configType) + `@(\d+-\d+)\.json`)
+	var maxVer model.FileVersion
+	found := false
 
-			// 更新最大时间戳的文件
-			if timestamp > maxTimestamp {
-				maxTimestamp = timestamp
-				targetFile = file
-			}
+	for _, file := range files {
+		base := filepath.Base(file) // 获取文件名（不含路径）
+		matches := re.FindStringSubmatch(base)
+		if len(matches) < 2 {
+			continue // 跳过不匹配的文件
+		}
+
+		fullVersion := matches[1]
+		// 拆分时间戳和序列号
+		parts := strings.Split(fullVersion, "-")
+		if len(parts) != 2 {
+			continue
+		}
+
+		timestamp, err1 := strconv.ParseInt(parts[0], 10, 64)
+		sequence, err2 := strconv.ParseInt(parts[1], 10, 64)
+		if err1 != nil || err2 != nil {
+			continue // 跳过无效数字
+		}
+
+		// 第一次找到有效版本时初始化 maxVer
+		if !found {
+			maxVer = model.FileVersion{Timestamp: timestamp, Sequence: sequence, FullVersion: fullVersion}
+			found = true
+			targetFile = file
+			continue
+		}
+
+		// 比较版本：时间戳优先，相同则取序列号更小的
+		if timestamp > maxVer.Timestamp ||
+			(timestamp == maxVer.Timestamp && sequence < maxVer.Sequence) {
+			maxVer = model.FileVersion{Timestamp: timestamp, Sequence: sequence, FullVersion: fullVersion}
+			targetFile = file
 		}
 	}
 
@@ -200,7 +224,6 @@ func getLatestFileData(configType string) (utils.Response, error) {
 		log.Errorf("no valid %s @<timestamp>.json file found", configType)
 		return rsp, fmt.Errorf("no %s*.json files found", configType)
 	}
-
 	// 读取文件内容
 	err = io.JSON.Read(targetFile, &rsp)
 	if err != nil {

@@ -1,10 +1,10 @@
 package model
 
 import (
-	"errors"
-	"fmt"
 	"agent/entity/consts"
 	"agent/logic/collector/device/model"
+	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	pb "trpcprotocol/agent"
@@ -23,6 +23,9 @@ type StdDeviceData struct {
 	// [短名称]
 	ConciseCodeMap      map[string]string
 	ConciseCodeMapMutex sync.RWMutex
+	// [DeviceNumber]DeviceGid
+	DeviceNumberMap      map[string]string
+	DeviceNumberMapMutex sync.RWMutex
 }
 
 // Copy 复制
@@ -31,14 +34,18 @@ func (s *StdDeviceData) Copy() *StdDeviceData {
 		return nil
 	}
 	newStdDeviceData := StdDeviceData{
-		StdDevices: make([]StdDevice, len(s.StdDevices)),
-		StdPoints:  make(map[string]model.StdInstancePointsInfo),
+		StdDevices:      make([]StdDevice, len(s.StdDevices)),
+		StdPoints:       make(map[string]model.StdInstancePointsInfo),
+		DeviceNumberMap: make(map[string]string),
 	}
 	copy(newStdDeviceData.StdDevices, s.StdDevices)
 	for k, v := range s.StdPoints {
 		newPointsInfo := make(model.StdInstancePointsInfo, len(v))
 		copy(newPointsInfo, v)
 		newStdDeviceData.StdPoints[k] = newPointsInfo
+	}
+	for k, v := range s.DeviceNumberMap {
+		newStdDeviceData.DeviceNumberMap[k] = v
 	}
 	return &newStdDeviceData
 }
@@ -164,6 +171,17 @@ func (s *StdDeviceData) GetPointsByConciseCode(gid string) string {
 	s.ConciseCodeMapMutex.RLock()
 	defer s.ConciseCodeMapMutex.RUnlock()
 	return s.ConciseCodeMap[gid]
+}
+
+// GetGidByDeviceNumber 通过设备编号获取设备gid
+func (s *StdDeviceData) GetGidByDeviceNumber(deviceNumber string) (string, bool) {
+	if s == nil {
+		return "", false
+	}
+	s.DeviceNumberMapMutex.RLock()
+	defer s.DeviceNumberMapMutex.RUnlock()
+	gid, ok := s.DeviceNumberMap[deviceNumber]
+	return gid, ok
 }
 
 // StdDeviceTree 设备树

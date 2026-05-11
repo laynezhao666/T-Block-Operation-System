@@ -1,0 +1,98 @@
+{
+  "_comment": "XBM平台变压器协议驱动配置示例",
+  "driver_name": "xbm",
+  "protocol_description": {
+    "protocol": "XBM Platform_PC-Transformer Protocol V17",
+    "serial_params": "9600:N:8:1 (9600波特率, 无校验, 8数据位, 1停止位)",
+    "frame_format": "Header(0xAB) + TransformerAddr(1B) + SensorAddr(2B,LE) + Command(1B) + Data(NB) + CRC(2B,LE)",
+    "crc": "CRC-16, 小端序(先发低字节)"
+  },
+  "channel_info": {
+    "name": "/dev/ttyUSB0",
+    "params": "9600:N:8:1",
+    "timeout_ms": 2000,
+    "driver_extend": {
+      "read_timeout": 2000,
+      "read_retries": 3,
+      "share_transport": false
+    }
+  },
+  "data_addr_format": {
+    "description": "transformer_addr:sensor_addr:command (支持十进制和十六进制0x前缀)",
+    "examples": [
+      "1:1:80     - 变压器1, 传感器1, 命令0x50(读电压)",
+      "1:0x0001:0x50  - 同上(十六进制)",
+      "1:0:80     - 变压器1, 所有传感器, 命令0x50(读电压)",
+      "1:0x8001:83    - 变压器1, I传感器1, 命令0x53(读环流)"
+    ]
+  },
+  "commands": {
+    "acquire_storage_data": {
+      "0x50": {"name": "读取存储电压", "data_bytes": 2, "formula": "value/100", "unit": "V", "example": "1235 = 12.35V"},
+      "0x51": {"name": "读取存储电阻", "data_bytes": 2, "formula": "value/100", "unit": "mOhm", "example": "503 = 5.03mOhm"},
+      "0x52": {"name": "读取存储温度1(R-sensor)", "data_bytes": 2, "formula": "value/10", "unit": "C", "example": "268 = 26.8C"},
+      "0x53": {"name": "读取存储环流", "data_bytes": 2, "formula": "value/10", "unit": "A", "example": "3215 = 321.5A"},
+      "0x54": {"name": "读取存储温度2(Transformer)", "data_bytes": 2, "formula": "value/10", "unit": "C", "example": "278 = 27.8C"}
+    },
+    "measure_and_acquire": {
+      "0x70": {"name": "测量并获取电压", "formula": "value/100", "unit": "V"},
+      "0x71": {"name": "测量并获取电阻", "formula": "value/100", "unit": "mOhm"},
+      "0x72": {"name": "测量并获取温度1(R-sensor)", "formula": "value/10", "unit": "C"},
+      "0x73": {"name": "测量并获取环流", "formula": "value/10", "unit": "A"},
+      "0x74": {"name": "测量并获取温度2(Transformer)", "formula": "value/10", "unit": "C"}
+    },
+    "abnormal_response": {
+      "0xF0": "通信异常响应",
+      "0xF1": "连接异常响应"
+    }
+  },
+  "sensor_address": {
+    "r_sensor": {"base": "0x0000", "range": "0x0001 - 0x0200", "description": "R传感器地址范围"},
+    "i_sensor": {"base": "0x8000", "range": "0x8001 - 0x8010", "description": "I传感器地址范围"},
+    "all_sensors": "0x0000 表示所有传感器"
+  },
+  "point_config_examples": [
+    {
+      "name": "电池电压",
+      "data_addr": "1:1:80",
+      "description": "变压器1, 传感器1, 读取存储电压(0x50)"
+    },
+    {
+      "name": "电池内阻",
+      "data_addr": "1:1:81",
+      "description": "变压器1, 传感器1, 读取存储电阻(0x51)"
+    },
+    {
+      "name": "传感器温度",
+      "data_addr": "1:1:82",
+      "description": "变压器1, 传感器1, 读取存储温度1(0x52)"
+    },
+    {
+      "name": "环路电流",
+      "data_addr": "1:0x8001:83",
+      "description": "变压器1, I传感器1, 读取存储环流(0x53)"
+    },
+    {
+      "name": "变压器温度",
+      "data_addr": "1:0:84",
+      "description": "变压器1, 读取变压器温度(0x54), 传感器地址可忽略"
+    }
+  ],
+  "protocol_examples": {
+    "request_voltage_sensor1": {
+      "description": "读取变压器1的传感器1的电压",
+      "request": "AB 01 01 00 50 EA DD",
+      "response": "AB 01 01 00 50 D3 04 CRC1 CRC2 (1235=12.35V)"
+    },
+    "request_all_voltage": {
+      "description": "读取变压器1的所有传感器电压",
+      "request": "AB 01 00 00 50 DA EA",
+      "response": "变压器会逐个返回每个传感器的电压"
+    },
+    "clear_alarm": {
+      "description": "清除传感器报警",
+      "request": "AB 01 00 00 B0 F4 17",
+      "response": "AB 01 00 00 B0 CRC1 CRC2"
+    }
+  }
+}

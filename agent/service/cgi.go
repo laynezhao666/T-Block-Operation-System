@@ -2,8 +2,11 @@ package service
 
 import (
 	"agent/entity/config"
+	cmWorker "agent/logic/cm"
+	"agent/logic/network/utils"
 	"agent/utils/osal"
 	"context"
+	"encoding/json"
 
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 
@@ -15,14 +18,9 @@ import (
 // CgiServiceImpl cgi服务
 type CgiServiceImpl struct{}
 
+// Profile 采集profile
 func (c *CgiServiceImpl) Profile(ctx context.Context, req *emptypb.Empty) (*pb.ProfileRsp, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (c *CgiServiceImpl) SetSnBinding(ctx context.Context, req *pb.SetSnBindingReq) (*emptypb.Empty, error) {
-	//TODO implement me
-	panic("implement me")
+	return cgi.ProfileHandle()
 }
 
 // Debug 调试
@@ -89,4 +87,40 @@ func (c *CgiServiceImpl) SetEnv(ctx context.Context, req *pb.SetEnvReq) (*emptyp
 
 	osal.Instance().BatchSet(req.Name, chList, 1)
 	return &emptypb.Empty{}, nil
+}
+
+func (c *CgiServiceImpl) SetSnBinding(ctx context.Context, req *pb.SetSnBindingReq) (*emptypb.Empty, error) {
+	return cgi.SetSnBindingHandle(ctx, req)
+}
+
+// GetBasicInfo 获取基本信息
+func (c *CgiServiceImpl) GetBasicInfo(ctx context.Context, req *emptypb.Empty) (*pb.GetBasicInfoRsp, error) {
+	return cgi.GetBasicInfoHandle(ctx, req)
+}
+
+// SetBasicInfo 设置基本信息
+func (c *CgiServiceImpl) SetBasicInfo(ctx context.Context, req *pb.SetBasicInfoReq) (*emptypb.Empty, error) {
+	return cgi.SetBasicInfoHandle(ctx, req)
+}
+
+// Version 版本信息
+func (c *CgiServiceImpl) Version(ctx context.Context, req *emptypb.Empty) (*pb.VersionRsp, error) {
+	version, ext := utils.GetVersion()
+
+	// 添加配置源信息
+	ext["source"] = config.GetRB().Project.Source
+
+	// 从内存缓存获取配置版本信息（无网络调用）
+	versionMap := cmWorker.Worker().GetConfigVersion()
+	if len(versionMap) > 0 {
+		versionJSON, _ := json.Marshal(versionMap)
+		ext["configVersion"] = string(versionJSON)
+	}
+
+	return &pb.VersionRsp{Version: version, Ext: ext}, nil
+}
+
+// ChangeMode 切换运营态
+func (c *CgiServiceImpl) ChangeMode(ctx context.Context, req *pb.ChangeModeReq) (*emptypb.Empty, error) {
+	return cgi.ChangeModeHandle(ctx, req)
 }

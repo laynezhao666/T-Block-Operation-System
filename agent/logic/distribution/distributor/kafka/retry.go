@@ -1,13 +1,13 @@
 package kafka
 
 import (
-	"fmt"
 	"agent/entity/config"
 	"agent/entity/model/data"
 	utils2 "agent/logic/distribution/distributor/utils"
 	monitor2 "agent/repo/monitor"
 	"agent/utils"
 	"agent/utils/thttp"
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -32,7 +32,7 @@ type messageResponse struct {
 
 func retry(data *data.DataUnit, messages []utils.KafkaMessage,
 	kData *utils2.KafkaData, kafkaDataList []*utils2.KafkaData,
-	interval int, shouldLog bool, isDefault bool) {
+	interval int, shouldLog bool, isDefault bool, mozuID string, dataType int) {
 	var wg sync.WaitGroup
 	successNum := int32(0)
 
@@ -54,7 +54,7 @@ func retry(data *data.DataUnit, messages []utils.KafkaMessage,
 			defer wg.Done()
 
 			t := &targets[i]
-			if err := retryBackup(data, messages, kData, kafkaDataList, interval, shouldLog, t); err == nil {
+			if err := retryBackup(data, messages, kData, kafkaDataList, interval, shouldLog, t, mozuID, dataType); err == nil {
 				atomic.AddInt32(&successNum, 1)
 			}
 		}(i)
@@ -81,7 +81,7 @@ func retry(data *data.DataUnit, messages []utils.KafkaMessage,
 
 func retryBackup(data *data.DataUnit, messages []utils.KafkaMessage,
 	kData *utils2.KafkaData, kafkaDataList []*utils2.KafkaData,
-	interval int, shouldLog bool, t *retryTarget) error {
+	interval int, shouldLog bool, t *retryTarget, mozuID string, dataType int) error {
 	if t == nil {
 		return nil
 	}
@@ -100,7 +100,7 @@ func retryBackup(data *data.DataUnit, messages []utils.KafkaMessage,
 		}
 	}
 	if err == nil {
-		kData.Report(fmt.Sprintf("http-%v", t.Name), interval)
+		kData.Report(fmt.Sprintf("http-%v", t.Name), interval, mozuID, dataType)
 		return nil
 	}
 

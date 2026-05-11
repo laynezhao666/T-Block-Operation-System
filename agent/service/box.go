@@ -1,12 +1,12 @@
 package service
 
 import (
-	"context"
-	"fmt"
 	"agent/entity/config"
 	"agent/entity/errcode"
 	"agent/logic/setup"
 	"agent/utils/file/io"
+	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"sync"
@@ -49,7 +49,10 @@ func (b BoxManager) SetRealTime(ctx context.Context, req *pb.SetRealTimeReq) (*e
 	if config.GetRB().IsGatewayMode() {
 		return &emptypb.Empty{}, errs.New(errcode.ErrGwMode, "agent-gw mode not support")
 	}
-
+	if config.GetRB().IsDisableSetTime() {
+		return &emptypb.Empty{}, errs.New(errcode.ErrGwMode, "disable set time")
+	}
+	log.Warnf("TBOX SetRealTime: req:%+v", req)
 	cmd := exec.Command("date", "-s", fmt.Sprintf("@%v", req.Time))
 	err := cmd.Run()
 	if err != nil {
@@ -80,5 +83,10 @@ func (b BoxManager) AgentRestart(ctx context.Context, req *emptypb.Empty) (*empt
 		setup.UnInit()
 		os.Exit(0)
 	}()
+	return &emptypb.Empty{}, nil
+}
+
+// HeartBeat 心跳,提供给备设备探测用
+func (b BoxManager) Heartbeat(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }

@@ -24,6 +24,7 @@ const (
 // ValParseParams 描述如何从设备响应报文中解析测点值
 // 包括测点在响应报文中的地址、类型、字节序等信息
 type ValParseParams struct {
+	PointID   string // 测点标识，仅用于日志追踪
 	DataAddr  string
 	DataType  string
 	ByteOrder string
@@ -40,6 +41,15 @@ type PointAttr struct {
 	ValParser interface{}
 }
 
+func (p *PointAttr) Clone() PointAttr {
+	n := new(PointAttr)
+	n.ID = p.ID
+	n.Type = p.Type
+	n.ValDesc = p.ValDesc
+	n.ValParser = p.ValParser
+	return *n
+}
+
 // PointInfo 测点信息
 type PointInfo struct {
 	// 测点属性
@@ -48,8 +58,26 @@ type PointInfo struct {
 	RtVal model.RTValue
 }
 
+func (p *PointInfo) Clone() *PointInfo {
+	n := new(PointInfo)
+	n.Attr = p.Attr.Clone()
+	n.RtVal = p.RtVal
+	return n
+}
+
 // ListPoints 测点列表
 type ListPoints []*PointInfo
+
+func (l ListPoints) Clone() ListPoints {
+	n := make(ListPoints, 0, len(l))
+	for i := range l {
+		if l[i] == nil {
+			continue
+		}
+		n = append(n, l[i].Clone())
+	}
+	return n
+}
 
 // TemplateInstancePointInfo 实例化的采集测点信息
 type TemplateInstancePointInfo struct {
@@ -98,10 +126,14 @@ func (pi InstancePointsInfo) GetDataPoints() model.DataPoints {
 type StdInstancePointInfo struct {
 	// 标准设备
 	StdDevice string `json:"device_gid"`
+	// 设备编号
+	DeviceNumber string `json:"device_number"`
 	// 标准测点
 	StdPoint string `json:"point_name_en"`
 	// 标准测点中文名
 	StdPointZh string `json:"point_name_zh"`
+	// 测点key
+	PointKey string `json:"point_key"`
 	// 变化阈值（绝对值）
 	Threshold string `json:"threshold"`
 	// 映射表达式
@@ -128,6 +160,16 @@ type StdInstancePointInfo struct {
 	PointRw string `json:"point_rw"`
 	// 等级
 	PointLevel string `json:"point_level"`
+	// 类型
+	PointType int32 `json:"point_type"`
+	// 特征
+	PointFeature string `json:"point_feature"`
+	// 分组
+	PointGroup string `json:"point_group"`
+	// 是否标准点
+	PointStandard int32 `json:"point_standard"`
+	// 模组id
+	MozuId int32 `json:"mozu_id"`
 }
 
 // StdInstancePointsInfo 标准化测点信息

@@ -86,3 +86,16 @@ func GetDataType(dataTypeString string, bitBegin *uint8, bitEnd *uint8) datatype
 
 	return datatype.InvalidType
 }
+
+// TransString2BoolIntStr bool类型不能带小数点，需要整型的数字,这里做转换
+func TransString2BoolIntStr(result any) any {
+	str, ok := result.(string)
+	if !ok {
+		return result
+	}
+	idx := strings.Index(str, ".")
+	if idx <= 0 {
+		return result
+	}
+	return str[0:idx]
+}

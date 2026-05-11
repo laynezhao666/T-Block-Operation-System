@@ -1,11 +1,11 @@
 package utils
 
 import (
-	"fmt"
 	"agent/entity/consts"
 	"agent/entity/model"
 	"agent/utils/file"
 	"agent/utils/file/io"
+	"fmt"
 	"os"
 	"time"
 
@@ -55,6 +55,7 @@ func SaveConfigMapToDirFileWithVersion(configMap map[string]any, configName stri
 	return nil
 }
 
+// StdDeviceFile 标准设备文件
 type StdDeviceFile struct {
 	Data StdDeviceList `json:"data"`
 }
@@ -65,11 +66,15 @@ type StdDeviceList struct {
 }
 
 // SaveConfigListToDirFile 保存标准设备配置
-func SaveConfigListToDirFile(dataList []model.StdDevice, dirs []string) error {
+func SaveConfigListToDirFile(dataList map[string][]model.StdDevice, dirs []string) error {
 	for _, dir := range dirs {
 		var f StdDeviceFile
+		list, ok := dataList[dir]
+		if !ok {
+			continue
+		}
 		f.Data = StdDeviceList{
-			List: dataList,
+			List: list,
 		}
 		// dir为采集设备编号,作为文件夹
 		filePath := consts.ProjectPath + "/" + dir + "/" + consts.StdDeviceTag + consts.SuffixJSON
