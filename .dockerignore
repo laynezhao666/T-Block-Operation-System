@@ -10,6 +10,7 @@
 !cmdb/
 !collector/
 !common/
+!dac/
 !data-cache/
 !data-compute/
 !data-query/

@@ -1,0 +1,78 @@
+site_name: TBOS Documentation
+site_description: Documentation for Tencent TBOS
+# site_url: {}
+
+repo_url: https://github.com/Tencent/T-Block-Operation-System
+repo_name: T-Block-Operation-System
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  language: zh  
+  font:
+    text: Noto Sans SC
+    code: JetBrains Mono
+  palette:
+    - scheme: default
+      primary: blue
+      toggle:
+        icon: material/brightness-7
+        name: 切换深色模式
+    - scheme: slate
+      primary: deep blue
+      toggle:
+        icon: material/brightness-4
+        name: 切换浅色模式
+  features:
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+nav:
+  - 首页: index.md
+  - 概览: overview.md
+  - 快速开始:
+    - 单机部署: quick_start/standalone.md
+    - Docker 部署: quick_start/docker.md
+    # - 分布式部署: quick_start/cluster.md
+    - 模拟数据接入: quick_start/simulation.md
+  - 核心概念:
+    - 概览: concepts/index.md
+    - 设备 Device: concepts/device.md
+    - 模组 Mozu: concepts/mozu.md
+    - 测点 Point: concepts/point.md
+  - 核心模块:
+    - 概览: modules/index.md
+    - 采集模块:
+      - 概览: modules/collect/index.md
+      - 采集总线 Collector: modules/collect/collector.md
+      - 边缘采集器 Agent: modules/collect/agent.md
+    - 配置模块:
+      - 概览: modules/config/index.md
+      - 配置管理服务 CMDB: modules/config/cmdb.md
+      - 调度中心 Scheduler: modules/config/scheduler.md
+    - 数据模块:
+      - 概览: modules/data/index.md
+      - 数据存储服务 Data-Store: modules/data/data-store.md
+      - 测点数据缓存服务 Data-Cache: modules/data/data-cache.md
+      - 标准测点计算服务 Data-Compute: modules/data/data-compute.md
+      - 数据查询服务 Data-Query: modules/data/data-query.md
+    - 告警模块:
+      - 概览: modules/alarm/index.md
+      - 告警策略设计: modules/alarm/alarm_strategy.md
+      - 告警计算引擎 Alarm-Compute: modules/alarm/alarm-compute.md
+      - 告警管理服务 Alarm-Manage: modules/alarm/alarm-manage.md
+      - 告警服务 Alarm-Server: modules/alarm/alarm-server.md
+      - 告警表达式: modules/alarm/expression.md
+    - 统一网关 CGI: modules/cgi.md
+    - 前端 Web: modules/web.md
+  # - 接入指南:
+  #   - 视图功能开发: user_guidance/view.md
+  #   - 数据持久化存储: user_guidance/persistance.md
+  #   - 第三方系统对接: user_guidance/third_party.md
+  #   - TBOX采集对接: user_guidance/tbox.md

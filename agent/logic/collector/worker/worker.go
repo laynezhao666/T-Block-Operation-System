@@ -2,10 +2,10 @@
 package worker
 
 import (
-	"fmt"
 	"agent/entity/config"
 	"agent/utils/message"
 	"agent/utils/osal/queue"
+	"fmt"
 	"runtime"
 	"sync/atomic"
 	"time"
@@ -137,12 +137,43 @@ func (w *WorkerChannel) Stop() {
 
 func (w *WorkerChannel) run() {
 	defer func() {
-		if err := recover(); err != nil {
-			stack := make([]byte, 102400)
+		// 1. 先捕获panic信息（暂不抛出，待资源释放后再re-panic）
+		panicErr := recover()
+
+		// 2. 关闭所有device; 单个device.Close panic不会影响其他panic的释放
+		for _, device := range w.devices {
+			func(d *dev.Device) {
+				defer func() {
+					if r := recover(); r != nil {
+						stack := make([]byte, 4096)
+						length := runtime.Stack(stack, true)
+						log.Errorf(
+							"WorkerChannel[%s] device.Close panic:%v, stack:%s",
+							w.channelID,
+							r,
+							string(stack[:length]),
+						)
+					}
+				}()
+				d.Close()
+				d.Post()
+			}(device)
+		}
+
+		// 3. 标记已停止，防止外部误认为仍在运行
+		w.setRunning(false)
+
+		// 4. 资源释放完毕后，重新抛出panic，使得进程退出，由k8s拉起。避免问题被掩盖，导致Collector僵尸态
+		if panicErr != nil {
+			stack := make([]byte, 4096)
 			length := runtime.Stack(stack, true)
-			log.Errorf("WorkerChannel[%s] panic:%v,stack:%s",
-				w.channelID, err, string(stack[:length]))
-			panic(err)
+			log.Errorf(
+				"WorkerChannel[%s] panic:%v, stack:%s",
+				w.channelID,
+				panicErr,
+				string(stack[:length]),
+			)
+			panic(panicErr)
 		}
 	}()
 
@@ -161,22 +192,18 @@ func (w *WorkerChannel) run() {
 	for {
 		select {
 		case <-w.stopCh:
-			// close 设备连接
-			for _, device := range w.devices {
-				device.Close()
-				device.Post()
-			}
+			// 退出由 defer 统一处理
 			return
 		case <-time.After(time.Duration(collectionInterval) * time.Millisecond):
 		}
 		w.doMessageQueue()
 		if len(w.devices) == 0 {
-			w.setRunning(false)
+			// 退出由 defer 统一处理
 			return
 		}
 		w.handleDeviceCollect()
 
-		// 没有采集任务 或者主动关闭时，退出
+		// 没有采集任务 或者主动关闭时，退出 (由defer统一处理)
 		if !w.IsRunning() {
 			return
 		}

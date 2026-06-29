@@ -86,7 +86,13 @@ Object.keys(proxyTable).forEach((context) => {
 
 // handle fallback for HTML5 history API
 app.use(require('connect-history-api-fallback')({
-  rewrites: buildRewrites(),
+  rewrites: [
+    ...buildRewrites(),
+    // 微前端子应用路由 fallback 到主框架页面（排除静态资源）
+    { from: /^\/tedge\/static\//, to: function(context) { return context.parsedUrl.pathname; } },
+    { from: /^\/tedge\//, to: '/adaptor.html' },
+    { from: /^\/tisspage\//, to: '/adaptor.html' },
+  ],
 }));
 
 // serve webpack bundle output
@@ -101,6 +107,10 @@ const staticPath = path.posix.join(getConfItem('assetsPublicPath'), getConfItem(
 
 // 已经将根目录static目录删除
 app.use(staticPath, express.static('./static'));
+
+// 服务 dist/main 目录中的子应用编译产物（微前端子应用）
+app.use('/tedge', express.static('./dist/main/tedge'));
+app.use('/', express.static('./dist/main'));
 
 // fo本地开发是所需的静态服务资源
 // app.use(express.static('src/module/fopage'))

@@ -4,6 +4,9 @@ FROM golang:alpine AS base
 # Set the working directory inside the container
 WORKDIR /app
 
+# 设置 Go 模块代理为腾讯云镜像
+ENV GOPROXY=https://mirrors.tencent.com/go/,direct
+
 # Copy all file
 COPY . .
 

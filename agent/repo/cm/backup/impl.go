@@ -311,8 +311,17 @@ func getLatestFileVersionFromDirectory(dir, configType string) (string, error) {
 	var maxVer model.FileVersion
 	found := false
 
+	// 空版本异常文件名(std@.json / devices@.json)
+	// 由 CMDB 下发空配置时，SaveConfigMapTODirFileWithVersion在 version=="" 时写入产生
+	// 此问题会导致备份目录中同时存在新的空文件和旧的版本文件，可能会导致脏数据上报
+	// 此处仅会检测并打印错误日志，提醒人工处理，而不做自动清理
+	emptyVerFileName := configType + "@" + consts.SuffixJSON
+
 	for _, file := range files {
 		base := filepath.Base(file) // 获取文件名（不含路径）
+		if base == emptyVerFileName {
+			log.Errorf("Detected stale empty-version file, please check and clean manually: %s", file)
+		}
 		matches := re.FindStringSubmatch(base)
 		if len(matches) < 2 {
 			continue // 跳过不匹配的文件

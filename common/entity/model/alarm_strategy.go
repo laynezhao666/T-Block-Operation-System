@@ -12,7 +12,7 @@ type AlarmStrategy struct {
 	Id                   int64     `gorm:"column:id;type:bigint(20);comment:主键ID;primaryKey;not null;" json:"id"`                                         // 主键ID
 	DeviceGid            string    `gorm:"column:device_gid;type:varchar(127);comment:设备GID;not null;" json:"device_gid"`                                 // 设备GID
 	Rid                  int64     `gorm:"column:rid;type:bigint(20);comment:策略ID;not null;default:0;" json:"rid"`                                        // 策略ID
-	RidVersion           string    `gorm:"column:rid_version;type:bigint(20);comment:策略版本;not null;default:0;" json:"rid_version"`                        // 策略版本
+	RidVersion           string    `gorm:"column:rid_version;type:varchar(127);comment:策略版本;not null;default:'';" json:"rid_version"`                        // 策略版本
 	RidType              int32     `gorm:"column:rid_type;type:tinyint(4);comment:策略类型,0:实时,1:延时;not null;default:0;" json:"rid_type"`                    // 策略类型,0:实时,1:延时
 	MozuId               int32     `gorm:"column:mozu_id;type:int(11);comment:所属模组ID;not null;default:0;" json:"mozu_id"`                                 // 所属模组ID
 	AlarmName            string    `gorm:"column:alarm_name;type:varchar(127);comment:告警名称;not null;" json:"alarm_name"`                                  // 告警名称

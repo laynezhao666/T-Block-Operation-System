@@ -1,8 +1,6 @@
 package snmp
 
 import (
-	"context"
-	"errors"
 	"agent/entity/config"
 	model2 "agent/entity/consts"
 	model3 "agent/entity/model"
@@ -10,6 +8,8 @@ import (
 	rtdbModel "agent/logic/collector/rtdb/model"
 	"agent/utils"
 	"agent/utils/osal"
+	"context"
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -32,9 +32,9 @@ type DeviceSNMP struct {
 
 func newGoSNMP(oidCount int, community string) *gosnmp.GoSNMP {
 	g := gosnmp.Default
-	var logger gosnmp.Logger = nil
+	var logger gosnmp.Logger
 	if config.GetRB().IsFeatureEnable("snmp-log") {
-		logger = utils.NewDefaultInfoLogger()
+		logger = gosnmp.NewLogger(utils.NewDefaultInfoLogger())
 	}
 	return &gosnmp.GoSNMP{
 		Port:               g.Port,

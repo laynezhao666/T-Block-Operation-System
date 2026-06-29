@@ -1,20 +1,19 @@
 package iec104
 
 import (
-	"context"
-	"fmt"
 	"agent/entity/consts"
 	"agent/logic/collector/device/model"
 	"agent/utils"
 	"agent/utils/osal"
+	"context"
+	"fmt"
 	"sync"
 
 	"trpc.group/trpc-go/trpc-go/log"
 
 	model1 "agent/entity/model"
 
-	"git.woa.com/andromeda/tengreen/iec104"
-	"git.woa.com/andromeda/tengreen/tengreen/common/tool"
+	"agent/third_party/iec104"
 )
 
 const DefaultTotalCalInterval = 5
@@ -128,11 +127,11 @@ func parseVariable(s *iec104.Signal, valueParser *ValueParser, variant *osal.Var
 	case iec104.MSpNa1:
 		v, ok := s.Value.(byte)
 		if !ok {
-			return fmt.Errorf("convert to byte error, pdu: %s, signal: %+v", tool.Strval(s.Value), s)
+			return fmt.Errorf("convert to byte error, pdu: %v, signal: %+v", s.Value, s)
 		}
 
 		if invalid := v & 0x80; invalid > 0 {
-			return fmt.Errorf("invalid byte, pdu: %s, signal: %+v", tool.Strval(s.Value), s)
+			return fmt.Errorf("invalid byte, pdu: %v, signal: %+v", s.Value, s)
 		}
 
 		value := 0

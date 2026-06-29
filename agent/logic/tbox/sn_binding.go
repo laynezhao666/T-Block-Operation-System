@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"git.woa.com/idc/etrpc-go/etrpc-go/util/httputil"
-	collectorPb "git.woa.com/idc/trpcprotocol/tbos/idc-tbos-collector"
+	"etrpc-go/util/httputil"
 	"trpc.group/trpc-go/trpc-go/log"
+	collectorPb "trpcprotocol/collector"
 )
 
 func (t *TboxManager) snBindingLoop(ctx context.Context) {

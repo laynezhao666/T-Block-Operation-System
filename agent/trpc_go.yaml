@@ -14,17 +14,19 @@ auth:
 client:
   filter: null
   service:
-    - callee: tbos.DataBus
+    - callee: tbos.collector.DataBus
       name: idc-tbos-collector-trpc
+      target: ip://127.0.0.1:9101 # 实际部署时，需要更换成collector的实际位址，或者使用服务发现
       namespace: Production
       network: tcp
-      protocol: trpc
+      protocol: http
       timeout: 30000
-    - callee: tbos.ConfigBus
+    - callee: tbos.collector.ConfigBus
       name: idc-tbos-collector-trpc
+      target: ip://127.0.0.1:9101 # 实际部署时，需要更换成collector的实际位址，或者使用服务发现
       namespace: Production
       network: tcp
-      protocol: trpc
+      protocol: http
       timeout: 30000
 collector:
   common:
@@ -174,6 +176,12 @@ distributor:
       - collect_change
       - collect_interval
     north_whitelist:
+  tlink:
+    enable:
+      - "std_change"
+      - "std_interval"
+      - "collect_change"
+      - "collect_interval"
 
 etrpc:
   disable_polaris_register: true
@@ -246,9 +254,7 @@ server:
 task:
   local:
     devs:
-      - ZW-FY-BD04-M101-ITMA-SPM-DA
-      - ZW-FY-BD04-M101-ITMA-SPM-DA
-      - ZW-FY-BD04-M101-ITMB-SPM-DA
+      - XX-XX-MG01-0122-ITMA-MC-DA01 # 即示例模版的对应配置，实际使用时需要替换
   mode: local
 tbox:
   heartbeat_interval_ms: 5000

@@ -18,12 +18,6 @@ server:
     - name: trpc.kafka.tbos.alarmCgiSync
       address: ${KAFKA_ADDR}?topics=${KAFKA_ALARM_PUSH_TOPIC}&group=cgi&initial=newest&batch=50&batchFlush=500
       protocol: kafka
-    - name: ${etrpc.service_name}-ws
-      network: tcp
-      protocol: ws_tnet
-      timeout: 0
-      ip: 0.0.0.0
-      port: ${PORT_CGI_WS}
 client:
   network: tcp
   service:

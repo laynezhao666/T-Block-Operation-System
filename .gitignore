@@ -55,3 +55,11 @@ target
 
 # 构建产物
 web/src/static/devstyle/adaptor.js
+
+# docker 一键体验运行时产物（由 tbos_docker.sh 脚本自动生成，不应入库）
+.env
+/nginx.conf
+/nginx.conf.bak*
+/docker-compose.yaml
+/tbos-docker-compose.yaml
+.data

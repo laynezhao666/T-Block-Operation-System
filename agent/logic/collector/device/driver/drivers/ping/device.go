@@ -17,7 +17,7 @@ import (
 	"agent/utils"
 	"agent/utils/osal"
 
-	elog "git.woa.com/idc/etrpc-go/etrpc-go/log"
+	elog "etrpc-go/log"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
 )

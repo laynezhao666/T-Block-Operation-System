@@ -41,7 +41,7 @@ func main() {
 	go alarmWSImpl.ExecPushAlarm(ctx, &wg)
 	go alarmWSImpl.RegularPushAll(ctx, &wg)
 	thttp.HandleFunc("/ws", alarmWSImpl.HandleWebSocket)
-	thttp.RegisterNoProtocolService(s.Service("cgi-ws"))
+	thttp.RegisterNoProtocolService(s)
 
 	// start server
 	etrpc.RunServer(s)

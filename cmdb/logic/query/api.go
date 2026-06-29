@@ -129,10 +129,10 @@ func (c *configQueryApiImpl) watchCollectorVer() {
 			continue
 		}
 		for _, collector := range collectors {
-			c.collectorVerChange.Store(collector.DeviceNumber, struct{}{})
+			c.collectorVerChange.Store(collector.DeviceNumber, mozu.MozuId)
 		}
 		for _, belongCollector := range pointCollectors {
-			c.collectorVerChange.Store(belongCollector, struct{}{})
+			c.collectorVerChange.Store(belongCollector, mozu.MozuId)
 		}
 	}
 }
@@ -566,9 +566,27 @@ func (c *configQueryApiImpl) GetCollectorDataVer(ctx context.Context, deviceNumb
 			return nil, err
 		}
 		for _, deviceNumber := range reloadDeviceNumbers {
+			pointVerStr := fmt.Sprint(pointVer[deviceNumber])
+			collectorVerStr := fmt.Sprint(collectorVer[deviceNumber])
+
+			// 若编号在 collectorVerChange 中（模组版本变化触发），但在 pointVer/collectorVer 中不存在
+			// 则使用对应模组的最近更新时间+0作为兜底版本号
+			if mozuId, ok := c.collectorVerChange.Load(deviceNumber); ok {
+				if _, exists := pointVer[deviceNumber]; !exists {
+					if mozuInfo, mOk := c.mozuVerCache[mozuId.(int32)]; mOk {
+						pointVerStr = fmt.Sprintf("%d-0", mozuInfo.UpdateAt.Unix())
+					}
+				}
+				if _, exists := collectorVer[deviceNumber]; !exists {
+					if mozuInfo, mOk := c.mozuVerCache[mozuId.(int32)]; mOk {
+						collectorVerStr = fmt.Sprintf("%d-0", mozuInfo.UpdateAt.Unix())
+					}
+				}
+			}
+
 			item := &cmdb.RspGetConfigModifyTime_ModifyTime{
-				Point:     fmt.Sprint(pointVer[deviceNumber]),
-				Collector: fmt.Sprint(collectorVer[deviceNumber]),
+				Point:     pointVerStr,
+				Collector: collectorVerStr,
 			}
 			res[deviceNumber] = item
 			c.collectorVerCache.Store(deviceNumber, item)

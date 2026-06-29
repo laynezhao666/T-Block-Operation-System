@@ -5,6 +5,7 @@ import (
 	"data-cache/entity/model"
 	"maps"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -146,6 +147,7 @@ type CompressPoint struct {
 // PointList 测点列表
 type PointList struct {
 	ts     uint32
+	len    int32 // 已写入的元素数量，原子操作，保证读取一致性
 	points []CompressPoint
 }
 
@@ -164,16 +166,22 @@ func (obj *PointList) Add(tsOffset uint8, addPoint *model.CachePoint) {
 		quality:  addPoint.Quality,
 		val:      addPoint.Value,
 	})
+	// len++ 置于完成之后，提供release语义
+	atomic.StoreInt32(&obj.len, int32(len(obj.points)))
 }
 
 // Filter 根据时间区间过滤测点
 func (obj *PointList) Filter(begin, end uint32) map[uint32]*model.CachePoint {
 	res := make(map[uint32]*model.CachePoint)
-	var points = obj.points
-	for _, point := range points {
-		ts := obj.ts + uint32(point.tsOffset)
-		if ts >= begin && ts <= end {
-			res[ts] = &model.CachePoint{
+	var points = obj.points         // 获取切片快照
+	n := atomic.LoadInt32(&obj.len) // 读取已发布长度(即acquire语义)
+	n = min(n, int32(len(points)))
+	ts := obj.ts
+	for i := int32(0); i < n; i++ {
+		point := points[i]
+		pointTs := ts + uint32(point.tsOffset)
+		if pointTs >= begin && pointTs <= end {
+			res[pointTs] = &model.CachePoint{
 				Value:   point.val,
 				Quality: point.quality,
 			}
@@ -183,5 +191,6 @@ func (obj *PointList) Filter(begin, end uint32) map[uint32]*model.CachePoint {
 }
 
 func (obj *PointList) Clear() {
-	obj.points = make([]CompressPoint, 0)
+	atomic.StoreInt32(&obj.len, 0)        // 归零长度，读取方读取到0时，不会再对切片进行遍历
+	obj.points = make([]CompressPoint, 0) // 然后，替换切片
 }

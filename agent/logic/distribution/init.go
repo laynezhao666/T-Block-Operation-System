@@ -4,6 +4,7 @@ import (
 	"agent/logic/distribution/change"
 	httpDt "agent/logic/distribution/distributor/http"
 	"agent/logic/distribution/distributor/kafka"
+	"agent/logic/distribution/distributor/tlink"
 	"agent/logic/distribution/interval"
 )
 
@@ -14,6 +15,9 @@ func Init() error {
 		return err
 	}
 	if err = httpDt.Init(); err != nil {
+		return err
+	}
+	if err = tlink.Init(); err != nil {
 		return err
 	}
 
